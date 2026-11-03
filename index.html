@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#2b3038">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Filament">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Printorix Filamentlager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: werkstatt-board — Kommode als echtes Möbel links, Drucker rechts, Bodenreihen + Bestellfluss darunter. Spulen als Draufsicht mit Füllring. */
+:root{
+  --bg:#e9ecef; --panel:#f8f9fa; --ink:#15181d; --muted:#5d6570; --line:#cfd4da;
+  --cab:#2b3038; --cab-edge:#1d2127; --drawer:#3a414b; --drawer-hi:#454d58; --drawer-ink:#e8ecf1; --drawer-muted:#9aa4b1;
+  --accent:#e8590c; --accent-ink:#fff; --track:#d5d9de; --track-on-cab:#262b32;
+  --low:#d6336c; --ok:#2f9e44; --warn:#f08c00;
+  --display:"Saira Condensed","Arial Narrow",sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121417; --panel:#1b1e23; --ink:#e7eaee; --muted:#98a1ac; --line:#2c3138;
+  --cab:#23272e; --cab-edge:#0b0d10; --drawer:#2e343c; --drawer-hi:#373e47; --drawer-ink:#e8ecf1; --drawer-muted:#8e98a5;
+  --accent:#ff7a2e; --accent-ink:#160a02; --track:#2c3138; --track-on-cab:#1a1e23; --low:#f06595; --ok:#51cf66; --warn:#fcc419; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121417; --panel:#1b1e23; --ink:#e7eaee; --muted:#98a1ac; --line:#2c3138;
+  --cab:#23272e; --cab-edge:#0b0d10; --drawer:#2e343c; --drawer-hi:#373e47; --drawer-ink:#e8ecf1; --drawer-muted:#8e98a5;
+  --accent:#ff7a2e; --accent-ink:#160a02; --track:#2c3138; --track-on-cab:#1a1e23; --low:#f06595; --ok:#51cf66; --warn:#fcc419; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0;font-size:14px;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;display:grid;gap:20px}
+
+/* Kopf */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:14px 12px;border-bottom:1px solid var(--line);display:grid;gap:12px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--bg)}
+.brandrow{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;justify-content:space-between}
+h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.01em;line-height:1;margin:0;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+h1 .mark{width:26px;height:26px;border-radius:50%;background:conic-gradient(var(--accent) 0 72%,var(--track) 0);display:grid;place-items:center}
+h1 .mark::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--bg)}
+h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0}
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.stat{display:grid;line-height:1.1}
+.stat b{font-family:var(--display);font-size:24px;font-weight:600}
+.stat span{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.stat.low b{color:var(--low)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search{flex:1 1 260px;position:relative;min-width:0}
+.search input{width:100%;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--panel);padding:0 12px 0 36px}
+.search svg{position:absolute;left:11px;top:11px;width:18px;height:18px;stroke:var(--muted)}
+.hit{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.hit b{color:var(--accent);font-weight:500}
+.btn{height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px}
+.btn.danger{color:var(--low)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip i{font-style:normal;font-family:var(--mono);font-size:11px;opacity:.7}
+.matbar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--track)}
+.matbar span{display:block;height:100%}
+
+/* Raster */
+.board{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:980px){.board{grid-template-columns:minmax(0,1fr)}}
+.sect-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
+.sect-h h2{font-family:var(--display);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.12em;margin:0;color:var(--muted)}
+.sect-h .sum{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+/* Kommode */
+.cabinet{background:var(--cab);border-radius:10px;padding:12px;border-bottom:10px solid var(--cab-edge);box-shadow:0 18px 30px -18px rgba(0,0,0,.45);display:grid;gap:10px}
+.crow{display:grid;gap:10px}
+.crow.top{grid-template-columns:repeat(4,minmax(0,1fr))}
+.crow.half{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:640px){.crow.top{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:420px){.crow.half{grid-template-columns:minmax(0,1fr)}}
+.drawer{background:linear-gradient(var(--drawer-hi),var(--drawer));border-radius:6px;padding:20px 10px 10px;position:relative;color:var(--drawer-ink);min-height:120px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s}
+.drawer::before{content:"";position:absolute;top:7px;left:50%;translate:-50% 0;width:34%;max-width:90px;height:5px;border-radius:3px;background:var(--cab-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.drawer .lh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:2px 6px;font-size:11.5px}
+.lh .nm,.lh .meta{white-space:nowrap}
+.drawer .lh .nm{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.drawer .lh .meta{font-family:var(--mono);font-size:11px;color:var(--drawer-muted)}
+.drop-on{box-shadow:0 0 0 2px var(--accent) inset}
+.loc{border-radius:8px}
+.icon-btn{width:26px;height:26px;border-radius:6px;border:0;background:transparent;display:inline-grid;place-items:center;color:inherit;opacity:.65}
+.icon-btn:hover{opacity:1;background:rgba(127,127,127,.18)}
+.icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* Spulen */
+.spools{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px 6px}
+.spool{border:0;background:transparent;padding:0;display:grid;justify-items:center;gap:3px;position:relative;transition:opacity .15s,transform .15s;min-width:0}
+.spool:hover{transform:translateY(-2px)}
+.disc{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;position:relative}
+.disc .fill{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.disc .fill::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--hub,var(--bg));box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.spool .t{font-size:10.5px;line-height:1.15;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.spool .w{font-family:var(--mono);font-size:10px;opacity:.75;font-variant-numeric:tabular-nums}
+.spool.low .w{color:var(--low);opacity:1;font-weight:500}
+.badge{position:absolute;top:-2px;right:calc(50% - 30px);font-family:var(--mono);font-size:9px;font-weight:500;line-height:1;padding:3px 4px;border-radius:4px;background:var(--warn);color:#111}
+.spool.dim{opacity:.13}
+.spool.match .disc{box-shadow:0 0 0 2px var(--accent)}
+.spool.test .disc .fill{outline:2px dashed var(--warn);outline-offset:2px}
+.spool.dragging{opacity:.4}
+.zub{display:flex;flex-wrap:wrap;gap:5px}
+.ztag{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:inherit;border-radius:5px;padding:3px 7px;font-size:11.5px}
+.ztag.dim{opacity:.18}.ztag.match{border-color:var(--accent)}
+.empty{font-size:12px;opacity:.55;font-style:italic;padding:6px 2px}
+
+/* Panels (hell) */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.panel .lh{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.panel .lh .nm{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.05em;text-transform:uppercase}
+.panel .lh .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stack{display:grid;gap:10px}
+.printer .slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.printer .slots.free{grid-template-columns:repeat(auto-fill,minmax(58px,1fr))}
+.slot{border:1px dashed var(--line);border-radius:8px;min-height:84px;display:grid;place-items:center;padding:4px 0}
+.slot.filled{border-style:solid}
+.slot .no{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.floor{display:grid;gap:10px}
+.floor .panel .spools{grid-template-columns:repeat(auto-fill,minmax(58px,1fr))}
+.floor-row{position:relative}
+.floor-row .panel{background:repeating-linear-gradient(135deg,var(--panel) 0 10px,color-mix(in srgb,var(--panel) 92%,var(--ink)) 10px 11px)}
+
+/* Bestellen */
+.order-list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.order-list li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border-radius:7px;background:var(--bg)}
+.sw{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.order-list .nm{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order-list .q{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.order-list .acts{display:flex;gap:4px}
+.addrow{display:grid;grid-template-columns:minmax(0,1fr) 58px auto;gap:6px}
+.addrow input{height:32px;border-radius:7px;border:1px solid var(--line);background:var(--bg);padding:0 8px;min-width:0}
+.sugg{display:flex;flex-wrap:wrap;gap:5px}
+.sugg button{border:1px dashed var(--low);color:var(--low);background:transparent;border-radius:999px;padding:2px 9px;font-size:11.5px}
+.note{font-size:12px;color:var(--muted)}
+
+/* Status */
+.banner{padding:10px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);font-size:13px}
+.banner.err{border-color:var(--low)}
+
+/* Editor */
+.scrim{position:fixed;inset:0;background:rgba(10,12,15,.45);z-index:50;display:flex;justify-content:flex-end}
+.sheet{background:var(--panel);width:min(430px,100%);height:100%;overflow:auto;padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px;display:grid;gap:14px;align-content:start;box-shadow:-20px 0 40px -20px rgba(0,0,0,.4)}
+.sheet h3{font-family:var(--display);font-size:22px;font-weight:700;text-transform:uppercase;margin:0;display:flex;align-items:center;gap:12px}
+.field{display:grid;gap:5px}
+.field label,.lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+.field input,.field select,.field textarea{height:38px;border-radius:7px;border:1px solid var(--line);background:var(--bg);padding:0 10px;width:100%;min-width:0}
+.field textarea{height:64px;padding:8px 10px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.palette{display:flex;flex-wrap:wrap;gap:6px}
+.palette button{width:24px;height:24px;border-radius:50%;border:2px solid transparent;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.palette button[aria-pressed="true"]{border-color:var(--accent)}
+.palette input[type=color]{width:24px;height:24px;border:0;padding:0;background:none;border-radius:50%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:7px 14px;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.weight-big{display:flex;align-items:center;gap:14px}
+.weight-big .disc{width:76px;height:76px}.weight-big .disc .fill{width:58px;height:58px}.weight-big .disc .fill::after{width:18px;height:18px}
+.quick{display:flex;flex-wrap:wrap;gap:5px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.sheet .actions{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.confirm{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));translate:-50% 0;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+
+/* Treffer-Liste & Handy-Bedienelemente (Desktop: aus) */
+#results,.tabs,.fab,#moreBtn{display:none}
+.wrap>*,header.top>*,.brandrow>*,.toolbar>*{min-width:0}
+h1{flex-wrap:wrap}
+.results{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rrow{width:100%;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px}
+.rrow .disc{width:40px;height:40px}.rrow .disc .fill{width:30px;height:30px}.rrow .disc .fill::after{width:10px;height:10px}
+.rrow .a{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .b{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .g{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;text-align:right}
+.rrow .g.low{color:var(--low)}
+.rrow .tq{font-family:var(--mono);font-size:9px;background:var(--warn);color:#111;border-radius:3px;padding:1px 4px;margin-left:6px;vertical-align:2px}
+@media (max-width:760px){
+  body{padding-block:0 calc(96px + env(safe-area-inset-bottom,0px))}
+  header.top{position:static;border-bottom:0;padding-block:12px 4px;gap:10px}
+  .brandrow{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .brandrow>*{width:100%;max-width:100%}
+  h1 small{margin-left:auto}
+  h1{font-size:24px}
+  .stats{flex-wrap:nowrap;overflow-x:auto;gap:8px;scrollbar-width:none}
+  .stats::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+  .stat{flex:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+  .stat b{font-size:20px}
+  .toolbar{gap:8px}
+  .search{flex:1 1 0}
+  .search input{height:46px;font-size:16px;border-radius:12px}
+  .search svg{top:14px}
+  #moreBtn{display:inline-flex;height:46px;border-radius:12px}
+  #addBtn,.extra{display:none}
+  .toolbar.open .extra{display:inline-flex;flex:1 1 calc(33% - 8px);justify-content:center}
+  .hit{order:9;flex-basis:100%}
+  .hit:empty{display:none}
+  .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-right:16px}
+  .chip{flex:none;height:34px;padding:0 13px;font-size:13px}
+  .board{gap:14px}
+  section[data-sec]:not(.on){display:none}
+  body.searching section[data-sec]{display:none}
+  body.searching #results{display:block}
+  .crow.top,.crow.half{grid-template-columns:minmax(0,1fr)}
+  .cabinet{padding:8px;gap:8px;border-bottom-width:6px}
+  .drawer{min-height:0;padding:18px 12px 12px}
+  .spools,.printer .slots.free,.floor .panel .spools{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:12px 6px}
+  .disc{width:54px;height:54px}.disc .fill{width:41px;height:41px}
+  .spool .t{font-size:11.5px}.spool .w{font-size:11px}
+  .icon-btn{width:36px;height:36px}
+  .panel .lh .nm{font-size:16px}
+  .addrow{grid-template-columns:minmax(0,1fr) 56px}
+  .addrow .btn{grid-column:1/-1;height:40px}
+  .addrow input{height:42px;font-size:16px}
+  .order-list li{padding:10px}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .tabs button{border:0;background:transparent;display:grid;justify-items:center;gap:3px;padding:6px 0;font-size:11px;font-weight:600;color:var(--muted);position:relative;border-radius:10px}
+  .tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabs button[aria-current="true"]{color:var(--accent)}
+  body.searching .tabs button[aria-current="true"]{color:var(--muted)}
+  .tb{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--low);color:#fff;font-size:10px;line-height:17px}
+  .fab{display:grid;place-items:center;position:fixed;z-index:41;right:max(16px,calc(env(safe-area-inset-right,0px) + 16px));bottom:calc(78px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 24px -8px rgba(0,0,0,.45)}
+  .fab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.6}
+  .scrim{align-items:flex-end}
+  .sheet{width:100%;height:auto;max-height:92%;border-radius:18px 18px 0 0;padding:10px max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+  .sheet::before{content:"";justify-self:center;width:40px;height:5px;border-radius:3px;background:var(--line)}
+  .field input,.field select,.field textarea{height:46px;font-size:16px}
+  .quick .btn{height:40px;flex:1}
+  .palette button{width:32px;height:32px}
+  .sheet .actions{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom,0px));background:var(--panel);padding-bottom:8px}
+  .sheet .actions .btn{flex:1 1 auto;justify-content:center;height:46px}
+  .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Login */
+.gate{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:24px}
+.gate-card{width:min(380px,100%);display:grid;gap:16px;justify-items:start}
+.gate-card h1{font-size:40px}
+.gate-card p{margin:0;color:var(--muted)}
+.gbtn{height:46px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;display:inline-flex;align-items:center;gap:10px}
+.gbtn svg{width:18px;height:18px}
+.gate .err{color:var(--low);font-size:13px}
+.who{font-family:var(--mono);font-size:11px;color:var(--muted)}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brandrow">
+      <h1><span class="mark" aria-hidden="true"></span>Filamentlager <small id="sync">verbinde…</small></h1>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="toolbar" id="toolbar">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Suchen: z. B. pctg schwarz, extrudr, gold…" autocomplete="off" aria-label="Filament suchen">
+      </div>
+      <span class="hit" id="hit"></span>
+      <button class="btn" id="moreBtn" aria-expanded="false" aria-controls="toolbar">Mehr</button>
+      <button class="btn primary" id="addBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Rolle</button>
+      <button class="btn extra" id="addZub">+ Zubehör</button>
+      <button class="btn extra" id="csvBtn">CSV</button>
+      <button class="btn extra" id="backupBtn" title="Kompletter Bestand als JSON sichern">Backup</button>
+      <button class="btn extra" id="importBtn" title="JSON-Backup oder Startbestand einlesen">Import</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <button class="btn extra" id="logoutBtn" title="Abmelden">Abmelden</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="matbar" id="matbar" aria-hidden="true"></div>
+  </header>
+
+  <div id="status"></div>
+
+  <section id="results" aria-live="polite"></section>
+  <div class="board">
+    <section data-sec="kommode">
+      <div class="sect-h"><h2>Kommode</h2><span class="sum" id="sumKommode"></span></div>
+      <div class="cabinet">
+        <div class="crow top" id="rowTop"></div>
+        <div class="crow half" id="rowMid"></div>
+        <div class="crow half" id="rowBot"></div>
+      </div>
+    </section>
+    <section data-sec="drucker">
+      <div class="sect-h"><h2>Drucker &amp; Trockner</h2><span class="sum" id="sumDrucker"></span></div>
+      <div class="stack" id="printers"></div>
+    </section>
+    <section data-sec="boden">
+      <div class="sect-h"><h2>Boden · Grossmengen</h2><span class="sum" id="sumBoden"></span></div>
+      <div class="floor" id="floor"></div>
+    </section>
+    <section data-sec="bestellen">
+      <div class="sect-h"><h2>Eingang &amp; Bestellung</h2></div>
+      <div class="stack" id="inbox"></div>
+    </section>
+  </div>
+</div>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <h1><span class="mark" aria-hidden="true"></span>Filamentlager</h1>
+    <p>Privates Lager. Bitte mit dem freigegebenen Google-Konto anmelden.</p>
+    <button class="gbtn" id="loginBtn"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Mit Google anmelden</button>
+    <div class="err" id="gateErr"></div>
+  </div>
+</div>
+<nav class="tabs" id="tabs" aria-label="Bereiche">
+  <button data-tab="kommode"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 10h18M3 16h18M10 6.5h4M10 13h4M10 19h4"/></svg>Kommode</button>
+  <button data-tab="drucker"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7"/></svg>Drucker</button>
+  <button data-tab="boden"><svg viewBox="0 0 24 24"><circle cx="6" cy="14" r="3.5"/><circle cx="12" cy="14" r="3.5"/><circle cx="18" cy="14" r="3.5"/><path d="M2 20h20"/></svg>Boden</button>
+  <button data-tab="bestellen"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L21 8H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg>Bestellen<span class="tb" id="tabBadge" hidden></span></button>
+</nav>
+<button class="fab" id="fab" aria-label="Neue Rolle erfassen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+<div id="sheetHost"></div>
+<div id="toastHost"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(() => {
+const LOCS = [
+  {id:'s1',name:'Schublade 1',zone:'top'},{id:'s2',name:'Schublade 2',zone:'top'},{id:'s3',name:'Schublade 3',zone:'top'},{id:'s4',name:'Schublade 4',zone:'top'},
+  {id:'s5',name:'Schublade 5',zone:'mid'},{id:'s6',name:'Schublade 6',zone:'mid'},
+  {id:'s7',name:'Schublade 7',zone:'bot'},{id:'s8',name:'Schublade 8',zone:'bot'},
+  {id:'h2s',name:'Bambu Lab H2S · AMS',zone:'printer',slots:4},{id:'h2s2',name:'H2S · Zusatz',zone:'printer'},
+  {id:'h2d',name:'Bambu Lab H2D · AMS',zone:'printer'},{id:'a1',name:'Bambu Lab A1 mini',zone:'printer',slots:4},
+  {id:'dry',name:'Sovol Filamenttrockner',zone:'printer'},
+  {id:'bodenS',name:'Reihe 1 · Schwarz',zone:'floor'},{id:'bodenW',name:'Reihe 2 · Weiss',zone:'floor'},
+  {id:'neu',name:'Noch einzuordnen',zone:'inbox'},{id:'bestellt',name:'In Bestellung',zone:'inbox'}
+];
+const MATS = ['PLA','PETG','PCTG','ABS','ASA','TPU','PA','PC','Resin'];
+const BRANDS = ['Bambu Lab','3DJake','Extrudr','Prusament','Polymaker','eSun','Sunlu','Elegoo'];
+const COLORS = [['Schwarz','#1c1c1e'],['Weiss','#f4f4f2'],['Grau','#8a8d90'],['Rot','#d0312d'],['Orange','#f28b2c'],['Gelb','#f5c518'],['Gold','#c9a227'],['Beige','#d9c6a5'],['Braun','#7a4b2a'],['Holz','#a87b4f'],['Olivgrün','#6b7a3a'],['Grün','#2e9e4f'],['Hellgrün','#8fd16a'],['Türkis','#1fb5ad'],['Blau','#2c62c9'],['Muted Blue','#6d86a3'],['Army Blue','#3e4f5f'],['Pink','#f08bb4'],['Marmor','#cfcac2'],['Klar','#dfeaf0'],['Rainbow','rainbow']];
+const COLOR_KEYS = [['MUTED BLUE','Muted Blue'],['ARMY BLUE','Army Blue'],['OLIV','Olivgrün'],['HELLGRÜN','Hellgrün'],['WOOD','Holz'],['HOLZ','Holz'],['MARBLE','Marmor'],['MARMOR','Marmor'],['TÜRKIS','Türkis'],['PINK','Pink'],['WEISS','Weiss'],['WHITE','Weiss'],['GRAU','Grau'],['GREY','Grau'],['SCHWARZ','Schwarz'],['BLACK','Schwarz'],['GELB','Gelb'],['YELLOW','Gelb'],['ROT','Rot'],['RED','Rot'],['BEIGE','Beige'],['GOLD','Gold'],['BRAUN','Braun'],['RAINBOW','Rainbow'],['BLAU','Blau'],['BLUE','Blau'],['ORANGE','Orange'],['CLEAR','Klar'],['KLAR','Klar'],['GRÜN','Grün'],['GREEN','Grün']];
+const MAT_COLORS = {PLA:'#4c6ef5',PETG:'#e8590c',PCTG:'#ae3ec9',ABS:'#2f9e44',ASA:'#0c8599',TPU:'#f59f00',PA:'#868e96',PC:'#495057',Resin:'#c2255c'};
+const LOW = 150;
+
+const state = { spools:new Map(), reorder:new Map(), names:{}, q:'', mat:null, qual:'alle', loaded:false };
+let db = null;
+const $ = (s,el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kg = g => g >= 1000 ? (g/1000).toLocaleString('de-CH',{maximumFractionDigits:2}) + ' kg' : Math.round(g) + ' g';
+const locName = id => state.names[id] || (LOCS.find(l=>l.id===id)||{}).name || id;
+const hexOf = c => (COLORS.find(x=>x[0].toLowerCase()===String(c||'').toLowerCase())||[])[1] || '';
+const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+function parseLabel(txt){
+  const U = txt.toUpperCase();
+  const material = MATS.find(m => new RegExp('\\b'+m.toUpperCase()+'\\b').test(U)) || '';
+  const ck = COLOR_KEYS.find(([k]) => U.includes(k)); const color = ck ? ck[1] : '';
+  const brand = /BAMBU/.test(U) ? 'Bambu Lab' : /3DJ/.test(U) ? '3DJake' : /EXTR/.test(U) ? 'Extrudr' : (BRANDS.find(b=>U.includes(b.toUpperCase()))||'');
+  const fin = []; [['GLANZ','Glanz'],['MATT','Matt'],['TRANSP','Transparent'],['SILK','Silk'],['BASIC','Basic'],['FOAMY','Foamy']].forEach(([k,v])=>{ if(U.includes(k)) fin.push(v); });
+  return {material,color,hex:hexOf(color),brand,finish:fin.join(' ')};
+}
+function fillCss(s){
+  const h = s.hex || hexOf(s.color) || '#999';
+  if (h === 'rainbow') return 'conic-gradient(#e03131,#f08c00,#fab005,#40c057,#228be6,#7048e8,#e03131)';
+  if (/transp|klar/i.test((s.finish||'')+' '+(s.color||''))) return `repeating-linear-gradient(45deg,${h} 0 4px,color-mix(in srgb,${h} 55%,transparent) 4px 8px)`;
+  return h;
+}
+function pct(s){ const full = +s.full || 1000; return Math.max(0, Math.min(1, (+s.weight||0)/full)); }
+function discHtml(s, onCab){
+  const p = Math.round(pct(s)*100);
+  const track = onCab ? 'var(--track-on-cab)' : 'var(--track)';
+  const ring = s.weight <= LOW ? 'var(--low)' : 'var(--accent)';
+  return `<span class="disc" style="background:conic-gradient(${ring} ${p}%, ${track} 0)"><span class="fill" style="background:${fillCss(s)};--hub:${onCab?'var(--drawer)':'var(--panel)'}"></span></span>`;
+}
+function label(s){ return [s.material, s.color].filter(Boolean).join(' ') || s.name || 'Rolle'; }
+function title(s){ return [s.material,s.color,s.finish,s.brand].filter(Boolean).join(' · ') + ` — ${s.weight} g` + (s.quality==='test'?' · TEST':''); }
+
+// --- Filter
+const SYN = {schwarz:'black',weiss:'white',grau:'grey gray',rot:'red',blau:'blue','muted blue':'blau','army blue':'blau',grün:'green gruen',hellgrün:'grün green lightgreen hellgruen',olivgrün:'grün olive green olivgruen',gelb:'yellow',orange:'',braun:'brown',beige:'',gold:'',pink:'rosa',türkis:'turquoise teal tuerkis',holz:'wood',marmor:'marble',klar:'clear transparent natur',rainbow:'regenbogen multicolor',
+  matt:'matte',glanz:'glossy gloss shiny',transparent:'transp clear',silk:'seide'};
+const norm = t => String(t||'').toLowerCase().replace(/ß/g,'ss').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue');
+function words(){ return norm(state.q).split(/\s+/).filter(Boolean); }
+function hay(s){
+  const base = [s.name,s.material,s.color,s.brand,s.finish,s.note,locName(s.loc),s.quality==='test'?'test':'gut',s.kind==='zubehoer'?'zubehör':'filament'].join(' ').toLowerCase();
+  const extra = [s.color,...String(s.finish||'').split(/\s+/)].map(x=>SYN[String(x||'').toLowerCase()]||'').join(' ');
+  const t = norm(base+' '+extra); return t+' '+t.replace(/[\s.\-]/g,'');
+}
+function matches(s){
+  if (s.kind==='zubehoer') { const w=words(); return !state.mat && state.qual==='alle' && (!w.length || w.every(x=>hay(s).includes(x))); }
+  if (state.mat && s.material !== state.mat) return false;
+  if (state.qual !== 'alle' && (s.quality||'gut') !== state.qual) return false;
+  const w = words(); return !w.length || w.every(x => hay(s).includes(x));
+}
+const filtering = () => !!(state.q.trim() || state.mat || state.qual!=='alle');
+function inLoc(id){ return [...state.spools.values()].filter(s=>s.loc===id).sort((a,b)=>(a.pos??0)-(b.pos??0)); }
+const fil = arr => arr.filter(s=>s.kind!=='zubehoer');
+const sumG = arr => fil(arr).reduce((a,s)=>a+(+s.weight||0),0);
+
+// --- Render
+function spoolBtn(s,onCab){
+  const cls = ['spool']; if (s.weight<=LOW) cls.push('low'); if (s.quality==='test') cls.push('test');
+  if (filtering()) cls.push(matches(s)?'match':'dim');
+  return `<button class="${cls.join(' ')}" draggable="true" data-id="${esc(s.id)}" title="${esc(title(s))}">${discHtml(s,onCab)}${s.quality==='test'?'<span class="badge">TEST</span>':''}<span class="t">${esc(label(s))}</span><span class="w">${s.weight} g</span></button>`;
+}
+function zubHtml(s){ const c = filtering()?(matches(s)?' match':' dim'):''; return `<button class="ztag${c}" data-id="${esc(s.id)}" draggable="true">${esc(s.name)}${s.qty?` <span style="opacity:.6">${esc(s.qty)}</span>`:''}</button>`; }
+const pencil = `<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>`;
+const plus = `<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
+function head(l, items){
+  const f = fil(items); const meta = f.length ? `${f.length} · ${kg(sumG(items))}` : (items.length? `${items.length} Teile` : 'leer');
+  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span><button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button><button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
+}
+function drawer(l){
+  const items = inLoc(l.id); const f = fil(items), z = items.filter(s=>s.kind==='zubehoer');
+  return `<div class="drawer loc" data-loc="${l.id}">${head(l,items)}
+    ${f.length?`<div class="spools">${f.map(s=>spoolBtn(s,true)).join('')}</div>`:''}
+    ${z.length?`<div class="zub">${z.map(zubHtml).join('')}</div>`:''}
+    ${!items.length?'<div class="empty">leer – Rolle hierher ziehen</div>':''}</div>`;
+}
+function printer(l){
+  const items = fil(inLoc(l.id));
+  let body;
+  if (l.slots) {
+    const n = Math.max(l.slots, items.length); const cells=[];
+    for (let i=0;i<n;i++){ const s=items[i]; cells.push(s?`<div class="slot filled">${spoolBtn(s,false)}</div>`:`<div class="slot"><span class="no">Slot ${i+1}</span></div>`); }
+    body = `<div class="slots">${cells.join('')}</div>`;
+  } else body = items.length ? `<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>` : '<div class="empty">leer</div>';
+  return `<div class="panel printer loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${body}</div>`;
+}
+function simplePanel(l, extra=''){
+  const items = fil(inLoc(l.id));
+  return `<div class="panel loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${items.length?`<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>`:'<div class="empty">leer</div>'}${extra}</div>`;
+}
+function reorderPanel(){
+  const items = [...state.reorder.values()].sort((a,b)=>(a.created||0)-(b.created||0));
+  const listed = new Set(items.map(r=>(r.name||'').toLowerCase()));
+  const low = fil([...state.spools.values()]).filter(s=>s.weight<=LOW && !['bestellt'].includes(s.loc));
+  const seen = new Set(); const sugg = low.filter(s=>{ const k=label(s).toLowerCase(); if(seen.has(k)||listed.has(k)) return false; seen.add(k); return true; });
+  return `<div class="panel" id="reorderPanel"><div class="lh"><span class="nm">Zu bestellen</span><span class="meta">${items.length} Positionen</span></div>
+    ${items.length?`<ul class="order-list">${items.map(r=>`<li><span class="sw" style="background:${fillCss(r)}"></span><span style="min-width:0"><div class="nm">${esc(r.name)}</div><div class="q">${r.qty||1}× ${r.brand?esc(r.brand):''}</div></span><span class="acts"><button class="btn sm" data-ordered="${esc(r.id)}" title="Als bestellt markieren – erscheint unter «In Bestellung»">Bestellt</button><button class="icon-btn" data-delorder="${esc(r.id)}" aria-label="Entfernen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></li>`).join('')}</ul>`:'<div class="empty" style="color:var(--muted)">Nichts offen.</div>'}
+    <form class="addrow" id="orderForm"><input id="orderTxt" placeholder="z. B. PETG Basic Schwarz Bambu" aria-label="Was bestellen"><input id="orderQty" type="number" min="1" value="1" aria-label="Anzahl"><button class="btn sm primary" type="submit">Hinzufügen</button></form>
+    ${sugg.length?`<div class="lbl">Fast leer (≤ ${LOW} g)</div><div class="sugg">${sugg.map(s=>`<button data-sugg="${esc(s.id)}">+ ${esc(label(s))} · ${s.weight} g</button>`).join('')}</div>`:''}
+  </div>`;
+}
+function render(){
+  const all = [...state.spools.values()]; const f = fil(all);
+  const total = sumG(all); const low = f.filter(s=>s.weight<=LOW).length; const tests = f.filter(s=>s.quality==='test').length;
+  const fullEq = f.filter(s=>s.loc!=='bestellt');
+  $('#stats').innerHTML = `<div class="stat"><b>${(sumG(fullEq)/1000).toLocaleString('de-CH',{maximumFractionDigits:1})} kg</b><span>Am Lager</span></div><div class="stat"><b>${fullEq.length}</b><span>Rollen</span></div><div class="stat low"><b>${low}</b><span>Fast leer</span></div><div class="stat"><b>${tests}</b><span>Test-Qualität</span></div><div class="stat"><b>${state.reorder.size}</b><span>Zu bestellen</span></div>`;
+  // chips
+  const byMat = {}; fullEq.forEach(s=>{ const m=s.material||'?'; byMat[m]=(byMat[m]||0)+(+s.weight||0); });
+  const mats = Object.keys(byMat).sort((a,b)=>byMat[b]-byMat[a]);
+  $('#chips').innerHTML = `<button class="chip" data-mat="" aria-pressed="${!state.mat}">Alle</button>` + mats.map(m=>`<button class="chip" data-mat="${esc(m)}" aria-pressed="${state.mat===m}"><span class="sw" style="width:9px;height:9px;background:${MAT_COLORS[m]||'#888'}"></span>${esc(m)} <i>${kg(byMat[m])}</i></button>`).join('') +
+    `<span style="width:10px"></span>` + ['alle','gut','test'].map(q=>`<button class="chip" data-qual="${q}" aria-pressed="${state.qual===q}">${q==='alle'?'Jede Qualität':q==='gut'?'Gut':'Test'}</button>`).join('');
+  const tot = mats.reduce((a,m)=>a+byMat[m],0)||1;
+  $('#matbar').innerHTML = mats.map(m=>`<span title="${esc(m)} ${kg(byMat[m])}" style="width:${byMat[m]/tot*100}%;background:${MAT_COLORS[m]||'#888'}"></span>`).join('');
+  // hit
+  if (filtering()){ const m = f.filter(matches); $('#hit').innerHTML = `<b>${m.length}</b> Rollen · <b>${kg(sumG(m))}</b>`; } else $('#hit').textContent='';
+  // zones
+  const z = n => LOCS.filter(l=>l.zone===n);
+  $('#rowTop').innerHTML = z('top').map(drawer).join('');
+  $('#rowMid').innerHTML = z('mid').map(drawer).join('');
+  $('#rowBot').innerHTML = z('bot').map(drawer).join('');
+  $('#printers').innerHTML = z('printer').map(printer).join('');
+  $('#floor').innerHTML = z('floor').map(l=>`<div class="floor-row">${simplePanel(l)}</div>`).join('');
+  const inb = z('inbox');
+  const best = inLoc('bestellt').length ? `<button class="btn sm" data-arrived="1" style="justify-self:start">Alle eingetroffen → ${esc(locName('neu'))}</button>` : '';
+  $('#inbox').innerHTML = simplePanel(inb[0]) + simplePanel(inb[1], best) + reorderPanel();
+  const zoneSum = ids => kg(sumG(all.filter(s=>ids.includes(s.loc))));
+  $('#sumKommode').textContent = zoneSum(['s1','s2','s3','s4','s5','s6','s7','s8']);
+  $('#sumDrucker').textContent = zoneSum(z('printer').map(l=>l.id));
+  $('#sumBoden').textContent = zoneSum(['bodenS','bodenW']);
+  document.body.classList.toggle('searching', filtering());
+  renderResults(); const nOpen = state.reorder.size + inLoc('bestellt').length; $('#tabBadge').hidden = !nOpen; $('#tabBadge').textContent = nOpen;
+  if (!state.loaded && db) $('#status').innerHTML = '<div class="banner">Lade Lagerbestand…</div>';
+}
+
+// --- DB
+async function put(s){ if(!db) return toast('Keine Verbindung zum Speicher'); const {id,...body}=s; state.spools.set(id,{id,...body}); render(); try{ await db.collection('spools').doc(id).set(body);}catch(e){ toast('Speichern fehlgeschlagen: '+(e.message||e.code)); } }
+async function del(id){ if(!db) return; state.spools.delete(id); render(); try{ await db.collection('spools').doc(id).delete(); }catch(e){ toast('Löschen fehlgeschlagen'); } }
+async function putOrder(r){ if(!db) return; const {id,...body}=r; state.reorder.set(id,r); render(); try{ await db.collection('reorder').doc(id).set(body);}catch(e){ toast('Speichern fehlgeschlagen'); } }
+async function delOrder(id){ if(!db) return; state.reorder.delete(id); render(); try{ await db.collection('reorder').doc(id).delete(); }catch(e){} }
+
+/* === Firebase: HIER deine Werte aus der Firebase-Konsole einsetzen === */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDZjpAytmAJa6JhBFNvNB45tD6p4bDuClA",
+  authDomain: "filamentlager-43ff7.firebaseapp.com",
+  projectId: "filamentlager-43ff7",
+  storageBucket: "filamentlager-43ff7.firebasestorage.app",
+  messagingSenderId: "1004285805983",
+  appId: "1:1004285805983:web:b5fdd5b19594e3badc69aa"
+};
+function connect(){
+  if (!window.firebase || FIREBASE_CONFIG.apiKey.startsWith('DEIN')) { $('#gateErr').textContent = 'Firebase ist noch nicht konfiguriert (FIREBASE_CONFIG in index.html).'; return; }
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth(); const fs = firebase.firestore();
+  fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  let unsubs = [];
+  $('#loginBtn').addEventListener('click', async () => {
+    $('#gateErr').textContent='';
+    const prov = new firebase.auth.GoogleAuthProvider(); prov.setCustomParameters({prompt:'select_account'});
+    try { await auth.signInWithPopup(prov); }
+    catch(e){ if (/popup-blocked|operation-not-supported/.test(e.code)) auth.signInWithRedirect(prov); else if (e.code!=='auth/popup-closed-by-user') $('#gateErr').textContent='Anmeldung fehlgeschlagen: '+e.code; }
+  });
+  $('#logoutBtn').addEventListener('click', () => auth.signOut());
+  auth.onAuthStateChanged(user => {
+    unsubs.forEach(u=>u()); unsubs=[]; state.spools=new Map(); state.reorder=new Map(); state.names={}; state.loaded=false;
+    if (!user){ db=null; $('#gate').hidden=false; render(); return; }
+    $('#gate').hidden=true; db=fs; $('#sync').textContent='verbinde…'; render();
+    const timer = setTimeout(()=>{ if(!state.loaded) $('#status').innerHTML='<div class="banner err">Der Speicher antwortet noch nicht – Daten erscheinen, sobald die Verbindung steht.</div>'; },10000);
+    const err = e => {
+      clearTimeout(timer);
+      if (e.code==='permission-denied'){ $('#status').innerHTML=''; $('#gate').hidden=false; $('#gateErr').textContent=`Kein Zugriff für ${user.email}. Melde dich mit dem freigegebenen Konto an.`; auth.signOut(); return; }
+      $('#sync').textContent='getrennt'; $('#status').innerHTML=`<div class="banner err">Verbindung unterbrochen (${esc(e.code)}). Seite neu laden.</div>`;
+    };
+    unsubs.push(fs.collection('spools').onSnapshot({includeMetadataChanges:true}, snap => {
+      state.spools = new Map(snap.docs.map(d=>[d.id,{id:d.id,...d.data()}]));
+      if(!snap.metadata.fromCache){ state.loaded=true; clearTimeout(timer); $('#status').innerHTML = snap.empty?'<div class="banner">Noch keine Rollen. Lies über «Import» den Startbestand (filamentlager-startbestand.json) ein oder erfasse die erste Rolle.</div>':''; $('#sync').textContent='● live synchron'; }
+      else if(!state.loaded) $('#sync').textContent='offline-Kopie';
+      render();
+    }, err));
+    unsubs.push(fs.collection('reorder').onSnapshot(snap => { state.reorder = new Map(snap.docs.map(d=>[d.id,{id:d.id,...d.data()}])); render(); }, err));
+    unsubs.push(fs.doc('meta/names').onSnapshot(snap => { state.names = snap.exists ? {...snap.data()} : {}; render(); }, ()=>{}));
+  });
+}
+function saveFile(name, text, type){
+  const url = URL.createObjectURL(new Blob([text],{type}));
+  const a = document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+// --- Editor
+let editing = null;
+function openSheet(s){
+  editing = JSON.parse(JSON.stringify(s));
+  const isZ = editing.kind==='zubehoer';
+  const isNew = !state.spools.has(editing.id);
+  const locOpts = LOCS.map(l=>`<option value="${l.id}"${l.id===editing.loc?' selected':''}>${esc(locName(l.id))}</option>`).join('');
+  $('#sheetHost').innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+    ${isZ ? `<h3 id="shT">${isNew?'Zubehör erfassen':'Zubehör'}</h3>
+      <div class="field"><label for="fName">Bezeichnung</label><input id="fName" value="${esc(editing.name)}" required></div>
+      <div class="two"><div class="field"><label for="fQty">Menge</label><input id="fQty" value="${esc(editing.qty||'')}" placeholder="z. B. 1m, 2x"></div>
+      <div class="field"><label for="fLoc">Ort</label><select id="fLoc">${locOpts}</select></div></div>`
+    : `<h3 id="shT"><span id="bigDisc"></span><span>${isNew?'Neue Rolle':esc(label(editing))}</span></h3>
+      <div class="weight-big"><div style="flex:1;display:grid;gap:6px">
+        <div class="field"><label for="fW">Restgewicht (g)</label><input id="fW" type="number" inputmode="numeric" min="0" step="10" value="${editing.weight}"></div>
+        <input id="fWr" type="range" min="0" max="${editing.full||1000}" step="10" value="${editing.weight}" aria-label="Restgewicht">
+        <div class="quick">${[10,50,100,250].map(n=>`<button type="button" class="btn sm" data-minus="${n}">−${n}</button>`).join('')}<button type="button" class="btn sm" data-setfull="1">voll</button></div>
+      </div></div>
+      <div class="field"><span class="lbl">Qualität</span><div class="seg" id="fQual"><button type="button" data-q="gut" aria-pressed="${editing.quality!=='test'}">Gut</button><button type="button" data-q="test" aria-pressed="${editing.quality==='test'}">Test</button></div></div>
+      <div class="two"><div class="field"><label for="fMat">Material</label><input id="fMat" list="dlMat" value="${esc(editing.material)}"></div>
+        <div class="field"><label for="fBrand">Marke</label><input id="fBrand" list="dlBrand" value="${esc(editing.brand)}"></div></div>
+      <div class="two"><div class="field"><label for="fCol">Farbe</label><input id="fCol" list="dlCol" value="${esc(editing.color)}"></div>
+        <div class="field"><label for="fFin">Finish</label><input id="fFin" list="dlFin" value="${esc(editing.finish)}" placeholder="Matt, Glanz, Silk…"></div></div>
+      <div class="palette" id="pal">${COLORS.map(([n,h])=>`<button type="button" data-c="${esc(n)}" data-h="${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${editing.color===n}" style="background:${h==='rainbow'?fillCss({hex:'rainbow'}):h}"></button>`).join('')}<input type="color" id="fHex" value="${/^#/.test(editing.hex)?editing.hex:'#888888'}" title="Eigene Farbe" aria-label="Eigene Farbe"></div>
+      <div class="two"><div class="field"><label for="fLoc">Ort</label><select id="fLoc">${locOpts}</select></div>
+        <div class="field"><label for="fFull">Rollengrösse (g)</label><input id="fFull" type="number" min="100" step="50" value="${editing.full||1000}"></div></div>
+      <div class="field"><label for="fNote">Notiz</label><textarea id="fNote" placeholder="z. B. getrocknet am …, Druckprofil">${esc(editing.note||'')}</textarea></div>
+      <datalist id="dlMat">${MATS.map(m=>`<option value="${m}">`).join('')}</datalist>
+      <datalist id="dlBrand">${BRANDS.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
+      <datalist id="dlCol">${COLORS.map(m=>`<option value="${esc(m[0])}">`).join('')}</datalist>
+      <datalist id="dlFin">${['Basic','Matt','Glanz','Silk','Transparent','Foamy','Eco'].map(m=>`<option value="${m}">`).join('')}</datalist>`}
+    <div class="actions" id="acts">
+      <button class="btn primary" type="submit">Speichern</button>
+      <button class="btn" type="button" id="cancel">Abbrechen</button>
+      ${!isNew && !isZ ? `<button class="btn" type="button" id="dup">Duplizieren</button><button class="btn" type="button" id="used">Aufgebraucht</button>`:''}
+      ${!isNew ? `<button class="btn danger" type="button" id="delBtn">Löschen</button>`:''}
+    </div>
+    <div id="confirmHost"></div>
+  </form></div>`;
+  const sh = $('#sheet');
+  const sync = () => {
+    if (isZ) return;
+    editing.weight = Math.max(0, Math.round(+$('#fW').value||0)); editing.full = Math.max(100, +$('#fFull').value||1000);
+    editing.material = $('#fMat').value.trim(); editing.brand=$('#fBrand').value.trim(); editing.finish=$('#fFin').value.trim();
+    const c = $('#fCol').value.trim(); if (c!==editing.color){ editing.color=c; const h=hexOf(c); if(h) editing.hex=h; }
+    editing.note = $('#fNote').value; editing.loc = $('#fLoc').value;
+    $('#fWr').max = editing.full; $('#fWr').value = editing.weight;
+    $('#bigDisc').innerHTML = `<span class="weight-big">${discHtml(editing,false)}</span>`;
+    sh.querySelectorAll('#pal button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.c===editing.color));
+  };
+  sync();
+  sh.addEventListener('input', e => { if (e.target.id==='fWr') $('#fW').value = e.target.value; if (e.target.id==='fHex'){ editing.hex=e.target.value; } sync(); });
+  sh.addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    if (b.dataset.minus){ $('#fW').value = Math.max(0,(+$('#fW').value||0) - +b.dataset.minus); sync(); }
+    if (b.dataset.setfull){ $('#fW').value = $('#fFull').value; sync(); }
+    if (b.dataset.q){ editing.quality=b.dataset.q; sh.querySelectorAll('#fQual button').forEach(x=>x.setAttribute('aria-pressed',x===b)); }
+    if (b.dataset.c){ $('#fCol').value=b.dataset.c; editing.color=b.dataset.c; editing.hex=b.dataset.h; sync(); }
+    if (b.id==='cancel') close();
+    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now()}; put(c); toast('Dupliziert'); close(); }
+    if (b.id==='used'){ const s=state.spools.get(editing.id); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); del(s.id); toast('Rolle entfernt und auf «Zu bestellen» gesetzt'); close(); }
+    if (b.id==='delBtn'){ $('#confirmHost').innerHTML = `<div class="confirm">Wirklich löschen? <button type="button" class="btn sm danger" id="yesDel">Ja, löschen</button><button type="button" class="btn sm" id="noDel">Nein</button></div>`; }
+    if (b.id==='yesDel'){ del(editing.id); toast('Gelöscht'); close(); }
+    if (b.id==='noDel'){ $('#confirmHost').innerHTML=''; }
+  });
+  sh.addEventListener('submit', e => {
+    e.preventDefault();
+    if (isZ){ editing.name=$('#fName').value.trim(); editing.qty=$('#fQty').value.trim(); editing.loc=$('#fLoc').value; if(!editing.name) return; }
+    else { sync(); editing.name = [editing.material,editing.color,editing.finish,editing.brand].filter(Boolean).join(' ').toUpperCase(); editing.quality = editing.quality||'gut'; }
+    put(editing); toast(isNew?'Hinzugefügt':'Gespeichert'); close();
+  });
+  $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
+  if (!matchMedia('(max-width:760px)').matches) (isZ ? $('#fName') : $('#fW')).focus();
+}
+function close(){ $('#sheetHost').innerHTML=''; editing=null; }
+document.addEventListener('keydown', e => { if (e.key==='Escape' && editing) close(); if (e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA'){ e.preventDefault(); $('#q').focus(); } });
+const blank = loc => ({id:newId('f'),kind:'filament',name:'',material:'PLA',color:'Schwarz',hex:'#1c1c1e',brand:'',finish:'',weight:1000,full:1000,quality:'gut',loc:loc||'neu',pos:Date.now(),note:''});
+
+// --- Rename
+function rename(id){
+  const host = document.querySelector(`[data-loc="${id}"] .nm`); if(!host) return;
+  host.innerHTML = `<input id="rn" value="${esc(locName(id))}" style="width:100%;font:inherit;background:transparent;border:1px solid var(--accent);border-radius:4px;padding:0 4px;color:inherit">`;
+  const inp = $('#rn'); inp.focus(); inp.select();
+  const done = async ok => { if(!inp.isConnected) return; const v=inp.value.trim(); inp.remove(); if(ok && v && db){ state.names={...state.names,[id]:v}; render(); try{ await db.doc('meta/names').set(state.names);}catch(e){toast('Umbenennen fehlgeschlagen');} } else render(); };
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') done(true); if(e.key==='Escape') done(false); });
+  inp.addEventListener('blur', ()=>done(true));
+}
+
+// --- Events
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b || b.closest('#sheet')) return;
+  if (b.dataset.id){ const s=state.spools.get(b.dataset.id); if(s) openSheet(s); return; }
+  if (b.dataset.add){ openSheet(blank(b.dataset.add)); return; }
+  if (b.dataset.rename){ rename(b.dataset.rename); return; }
+  if ('mat' in b.dataset){ state.mat = b.dataset.mat || null; render(); return; }
+  if (b.dataset.qual){ state.qual = b.dataset.qual; render(); return; }
+  if (b.dataset.delorder){ delOrder(b.dataset.delorder); return; }
+  if (b.dataset.ordered){ const r=state.reorder.get(b.dataset.ordered); if(!r) return; for(let i=0;i<(+r.qty||1);i++) put({id:newId('f'),kind:'filament',name:r.name,material:r.material||'',color:r.color||'',hex:r.hex||hexOf(r.color),brand:r.brand||'',finish:r.finish||'',weight:1000,full:1000,quality:'gut',loc:'bestellt',pos:Date.now()+i,note:''}); delOrder(r.id); toast(`${r.qty||1}× unter «${locName('bestellt')}»`); return; }
+  if (b.dataset.arrived){ inLoc('bestellt').forEach(s=>put({...s,loc:'neu'})); toast(`Verschoben nach «${locName('neu')}»`); return; }
+  if (b.dataset.sugg){ const s=state.spools.get(b.dataset.sugg); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); toast('Auf die Bestellliste gesetzt'); return; }
+});
+document.addEventListener('submit', e => {
+  if (e.target.id!=='orderForm') return; e.preventDefault();
+  const t=$('#orderTxt').value.trim(); if(!t) return; const p=parseLabel(t);
+  putOrder({id:newId('r'),name:t,...p,qty:Math.max(1,+$('#orderQty').value||1),created:Date.now()});
+});
+$('#q').addEventListener('input', e => { state.q = e.target.value; render(); });
+$('#addBtn').addEventListener('click', () => openSheet(blank('neu')));
+$('#addZub').addEventListener('click', () => openSheet({id:newId('z'),kind:'zubehoer',name:'',qty:'',loc:'s8',pos:Date.now()}));
+$('#csvBtn').addEventListener('click', async () => {
+  const rows = [['Ort','Typ','Material','Farbe','Finish','Marke','Restgewicht g','Rollengrösse g','Qualität','Bezeichnung','Notiz']];
+  LOCS.forEach(l => inLoc(l.id).forEach(s => rows.push([locName(l.id), s.kind==='zubehoer'?'Zubehör':'Filament', s.material||'', s.color||'', s.finish||'', s.brand||'', s.kind==='zubehoer'?'':s.weight, s.kind==='zubehoer'?'':(s.full||1000), s.quality||'', s.kind==='zubehoer'?(s.name+' '+(s.qty||'')).trim():s.name, (s.note||'').replace(/\n/g,' ')])));
+  const csv = '﻿' + rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  saveFile(`Lagerbestand_Filament_${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv;charset=utf-8');
+});
+$('#backupBtn').addEventListener('click', () => {
+  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names};
+  saveFile(`filamentlager-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(out,null,1), 'application/json');
+});
+$('#importBtn').addEventListener('click', () => $('#importFile').click());
+$('#importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value=''; if(!f || !db) return;
+  let data; try { data = JSON.parse(await f.text()); } catch(_){ return toast('Datei ist kein gültiges JSON'); }
+  const spools = Array.isArray(data) ? data : (data.spools||[]); const reorder = Array.isArray(data) ? [] : (data.reorder||[]);
+  const writes = [...spools.map(s=>['spools',s]), ...reorder.map(r=>['reorder',r])].filter(([,x])=>x && x.id);
+  if (!writes.length) return toast('Keine Einträge in der Datei gefunden');
+  try {
+    for (let i=0;i<writes.length;i+=400){ const b=db.batch(); writes.slice(i,i+400).forEach(([c,x])=>{ const {id,...body}=x; b.set(db.collection(c).doc(String(id)), body); }); await b.commit(); }
+    if (data.names && Object.keys(data.names).length) await db.doc('meta/names').set(data.names);
+    toast(`${writes.length} Einträge importiert`);
+  } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
+});
+
+// Drag & Drop (Desktop) – mobil über «Ort» im Editor
+let dragId = null;
+document.addEventListener('dragstart', e => { const b=e.target.closest('[data-id]'); if(!b) return; dragId=b.dataset.id; b.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',dragId);}catch(_){} });
+document.addEventListener('dragend', () => { dragId=null; document.querySelectorAll('.drop-on,.dragging').forEach(x=>x.classList.remove('drop-on','dragging')); });
+document.addEventListener('dragover', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); document.querySelectorAll('.drop-on').forEach(x=>x!==l&&x.classList.remove('drop-on')); l.classList.add('drop-on'); });
+document.addEventListener('drop', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); const s=state.spools.get(dragId); if(s && s.loc!==l.dataset.loc){ put({...s,loc:l.dataset.loc,pos:Date.now()}); toast(`→ ${locName(l.dataset.loc)}`); } });
+
+let tt; function toast(m){ $('#toastHost').innerHTML=`<div class="toast" role="status">${esc(m)}</div>`; clearTimeout(tt); tt=setTimeout(()=>$('#toastHost').innerHTML='',2200); }
+
+// --- Handy: Treffer-Liste, Tabs, Mehr-Menü
+function renderResults(){
+  if (!filtering()){ $('#results').innerHTML=''; return; }
+  const order = Object.fromEntries(LOCS.map((l,i)=>[l.id,i]));
+  const m = [...state.spools.values()].filter(matches).sort((a,b)=>(order[a.loc]??99)-(order[b.loc]??99)||(a.pos??0)-(b.pos??0));
+  const f = fil(m);
+  $('#results').innerHTML = `<div class="sect-h"><h2>Treffer</h2><span class="sum">${f.length} Rollen · ${kg(sumG(m))}</span></div>` +
+    (m.length ? `<ul class="results">${m.map(s=> s.kind==='zubehoer'
+      ? `<li><button class="rrow" data-id="${esc(s.id)}"><span></span><span style="min-width:0"><div class="a">${esc(s.name)}</div><div class="b">Zubehör · ${esc(locName(s.loc))}</div></span><span class="g">${esc(s.qty||'')}</span></button></li>`
+      : `<li><button class="rrow" data-id="${esc(s.id)}">${discHtml(s,false)}<span style="min-width:0"><div class="a">${esc(label(s))}${s.quality==='test'?'<span class="tq">TEST</span>':''}</div><div class="b">${esc([s.finish,s.brand].filter(Boolean).join(' · '))}${(s.finish||s.brand)?' · ':''}${esc(locName(s.loc))}</div></span><span class="g${s.weight<=LOW?' low':''}">${s.weight} g</span></button></li>`).join('')}</ul>`
+      : '<div class="banner">Keine Treffer. Suchbegriff oder Filter anpassen.</div>');
+}
+let tab = 'kommode'; try { tab = localStorage.getItem('fl-tab') || 'kommode'; } catch(_){}
+function applyTab(){
+  document.querySelectorAll('section[data-sec]').forEach(s=>s.classList.toggle('on', s.dataset.sec===tab));
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-current', b.dataset.tab===tab));
+}
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  tab = b.dataset.tab; try{ localStorage.setItem('fl-tab',tab); }catch(_){}
+  if (filtering()){ state.q=''; $('#q').value=''; state.mat=null; state.qual='alle'; render(); }
+  applyTab(); window.scrollTo({top:0});
+});
+$('#moreBtn').addEventListener('click', e => { const t=$('#toolbar'); const o=t.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded',o); e.currentTarget.textContent=o?'Weniger':'Mehr'; });
+$('#fab').addEventListener('click', () => openSheet(blank(tab==='drucker'?'neu':'neu')));
+applyTab();
+
+render(); connect();
+})();
+</script>
+
+</body>
+</html>
