@@ -500,17 +500,35 @@ function connect(){
   const auth = firebase.auth(); const fs = firebase.firestore();
   fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
   let unsubs = [];
+  const AUTH_MSG = {
+    'auth/unauthorized-domain': 'Diese Domain ist in Firebase nicht freigegeben. Authentication → Einstellungen → Autorisierte Domains → sen82430.github.io hinzufügen.',
+    'auth/operation-not-allowed': 'Google-Anmeldung ist in Firebase nicht aktiviert. Authentication → Anmeldemethode → Google → Aktivieren → Speichern.',
+    'auth/popup-blocked': 'Der Browser hat das Anmeldefenster blockiert. Pop-ups für diese Seite erlauben und nochmals tippen.',
+    'auth/popup-closed-by-user': 'Das Anmeldefenster wurde geschlossen, bevor die Anmeldung fertig war. Nochmals versuchen.',
+    'auth/cancelled-popup-request': 'Anmeldung abgebrochen. Nochmals versuchen.',
+    'auth/network-request-failed': 'Keine Verbindung zu Google. Internet prüfen und nochmals versuchen.',
+    'auth/web-storage-unsupported': 'Der Browser blockiert den Speicher (privater Modus oder Cookies blockiert). Normales Fenster verwenden.',
+    'auth/internal-error': 'Interner Anmeldefehler. Seite neu laden (Ctrl+F5) und nochmals versuchen.'
+  };
+  const showAuthErr = e => { console.error('[Filamentlager] Login-Fehler', e); $('#gateErr').textContent = (AUTH_MSG[e.code] || 'Anmeldung fehlgeschlagen.') + ' (' + (e.code || e.message) + ')'; };
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(showAuthErr);
+  auth.getRedirectResult().catch(showAuthErr);
   $('#loginBtn').addEventListener('click', async () => {
-    $('#gateErr').textContent='';
+    $('#gateErr').textContent='Anmeldefenster ist offen …';
     const prov = new firebase.auth.GoogleAuthProvider(); prov.setCustomParameters({prompt:'select_account'});
-    try { await auth.signInWithPopup(prov); }
-    catch(e){ if (/popup-blocked|operation-not-supported/.test(e.code)) auth.signInWithRedirect(prov); else if (e.code!=='auth/popup-closed-by-user') $('#gateErr').textContent='Anmeldung fehlgeschlagen: '+e.code; }
+    try {
+      const res = await auth.signInWithPopup(prov);
+      $('#gateErr').textContent = res && res.user ? `Angemeldet als ${res.user.email}, lade Daten …` : '';
+    } catch(e){
+      if (e.code==='auth/operation-not-supported-in-this-environment'){ $('#gateErr').textContent='Weiterleitung zu Google …'; return auth.signInWithRedirect(prov).catch(showAuthErr); }
+      showAuthErr(e);
+    }
   });
   $('#logoutBtn').addEventListener('click', () => auth.signOut());
   auth.onAuthStateChanged(user => {
     unsubs.forEach(u=>u()); unsubs=[]; state.spools=new Map(); state.reorder=new Map(); state.names={}; state.loaded=false;
     if (!user){ db=null; $('#gate').hidden=false; render(); return; }
-    $('#gate').hidden=true; db=fs; $('#sync').textContent='verbinde…'; render();
+    $('#gate').hidden=true; $('#gateErr').textContent=''; db=fs; $('#sync').textContent='verbinde…'; $('#logoutBtn').title='Abmelden ('+user.email+')'; render();
     const timer = setTimeout(()=>{ if(!state.loaded) $('#status').innerHTML='<div class="banner err">Der Speicher antwortet noch nicht – Daten erscheinen, sobald die Verbindung steht.</div>'; },10000);
     const err = e => {
       clearTimeout(timer);
