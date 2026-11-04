@@ -124,9 +124,10 @@ h1 small{font-family:var(--mono);font-size:12.5px;font-weight:400;color:var(--mu
 .disc .fill{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 1px var(--ring-line),inset 0 0 0 1px rgba(0,0,0,.18)}
 .disc .fill::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--hub,var(--bg));box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
 .spool .t{font-size:12px;line-height:1.15;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.spool .w{font-family:var(--mono);font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
-.spool.low .w{color:var(--low);opacity:1;font-weight:500}
-.drawer .spool.low .w{color:#FCA5A5}
+.spool .w{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.drawer .spool .w{color:var(--drawer-ink)}
+.spool.low .w{color:var(--low);font-weight:700}
+.drawer .spool.low .w{color:#FFB4B4}
 .badge{position:absolute;top:-2px;right:calc(50% - 30px);font-family:var(--mono);font-size:10px;font-weight:500;line-height:1;padding:3px 4px;border-radius:4px;background:var(--warn);color:#111}
 .spool.dim{opacity:.13}
 .spool.match .disc{box-shadow:0 0 0 1px var(--ring-line),0 0 0 3px var(--accent)}
@@ -217,8 +218,8 @@ h1{flex-wrap:wrap}
 .rrow .disc{width:40px;height:40px}.rrow .disc .fill{width:30px;height:30px}.rrow .disc .fill::after{width:10px;height:10px}
 .rrow .a{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rrow .b{font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rrow .g{font-family:var(--mono);font-size:14.5px;font-variant-numeric:tabular-nums;text-align:right}
-.rrow .g.low{color:var(--low)}
+.rrow .g{font-family:var(--mono);font-size:14.5px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+.rrow .g.low{color:var(--low);font-weight:700}
 .rrow .tq{font-family:var(--mono);font-size:10px;background:var(--warn);color:#111;border-radius:3px;padding:1px 4px;margin-left:6px;vertical-align:2px}
 @media (max-width:760px){
   body{padding-block:0 calc(96px + env(safe-area-inset-bottom,0px))}
