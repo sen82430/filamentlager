@@ -291,6 +291,8 @@ h1{flex-wrap:wrap}
   .scrim{align-items:flex-end}
   .sheet{width:100%;height:auto;max-height:92%;border-radius:18px 18px 0 0;padding:10px max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
   .sheet::before{content:"";justify-self:center;width:40px;height:5px;border-radius:3px;background:var(--line)}
+  .combo>input:not([type=color]),.lrow .lname{height:46px;font-size:18px}
+  .combo-list .opt{min-height:44px}
   .field input,.field select,.field textarea{height:46px;font-size:18px}
   .quick .btn{height:40px;flex:1}
   .palette button{width:32px;height:32px}
@@ -316,6 +318,35 @@ h1{flex-wrap:wrap}
 .menuPop button{height:40px;border:0;background:transparent;border-radius:8px;text-align:left;padding:0 10px;display:flex;align-items:center;gap:10px;font-weight:500}
 .menuPop button:hover{background:var(--accent-soft);color:var(--accent)}
 .menuPop button.danger{color:var(--low)}
+
+/* Auswahlfeld */
+.combo{position:relative;display:flex;align-items:center;min-width:0}
+.combo>input:not([type=color]){height:38px;border-radius:7px;border:1px solid var(--line);background:var(--bg);padding:0 34px 0 10px;width:100%;min-width:0}
+.combo.has-hex>input:not([type=color]){padding-left:40px}
+.combo .combo-hex{position:absolute;left:7px;top:50%;translate:0 -50%;width:26px;height:26px;min-width:0;border:0;padding:0;background:none;border-radius:50%;cursor:pointer;z-index:1}
+.combo .combo-hex::-webkit-color-swatch-wrapper{padding:0}.combo-hex::-webkit-color-swatch{border:1px solid var(--ring-line);border-radius:50%}
+.combo-btn{position:absolute;right:3px;top:50%;translate:0 -50%;width:30px;height:30px;border:0;background:transparent;border-radius:6px;display:grid;place-items:center;color:var(--muted)}
+.combo-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.combo-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2}
+.combo-list{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:80;max-height:260px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 32px -12px rgba(15,23,34,.4);padding:4px;display:grid;gap:1px}
+.combo-list .opt{display:flex;align-items:center;gap:9px;border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:7px;font-weight:500;min-height:38px;color:var(--ink)}
+.combo-list .opt:hover,.combo-list .opt.act{background:var(--accent-soft);color:var(--accent)}
+.combo-list .opt.sel{font-weight:700}
+.combo-list .opt.add{color:var(--accent);font-weight:600;border-bottom:1px solid var(--line);border-radius:7px 7px 0 0}
+.combo-list .opt.empty{color:var(--muted);font-style:italic}
+.combo-list .sw{width:18px;height:18px;flex:none}
+/* Listen verwalten */
+#lTabs{flex-wrap:wrap}
+.lrows{display:grid;gap:6px;max-height:50vh;overflow:auto;padding-right:2px}
+.lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.lrow:not(:has(.lhex)){grid-template-columns:minmax(0,1fr) auto auto}
+.lrow .lname{height:38px;border-radius:7px;border:1px solid var(--line);background:var(--bg);padding:0 10px;min-width:0}
+.lrow .lhex,#lNewHex{width:32px;height:32px;border:0;padding:0;background:none;cursor:pointer}
+.lrow .lcount{font-size:12.5px;color:var(--muted);min-width:28px;text-align:right}
+.lrow .confirm{grid-column:1/-1}
+.sheet .addrow{grid-template-columns:auto minmax(0,1fr) auto;align-items:center}
+.sheet .addrow:not(:has(#lNewHex)){grid-template-columns:minmax(0,1fr) auto}
+.sheet .addrow input:not([type=color]){height:38px}
 .switch{margin-left:auto;width:40px;height:24px;border-radius:12px;background:var(--line);position:relative;flex:none;transition:background .15s}
 .switch span{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
 [aria-checked="true"] .switch{background:var(--ring)}
@@ -344,6 +375,7 @@ h1{flex-wrap:wrap}
         <button class="menuBtn" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="menuPop" title="Menü"><img src="printorix-icon.png" alt="Menü"></button>
         <div class="menuPop" id="menuPop" role="menu" hidden>
           <div class="who" id="who">nicht angemeldet</div>
+          <button role="menuitem" id="listsBtn"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Listen verwalten</button>
           <button role="menuitemcheckbox" id="themeBtn" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>Dunkelmodus<span class="switch" aria-hidden="true"><span></span></span></button>
           <button role="menuitem" id="backupBtn" title="Kompletter Bestand als JSON sichern"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Backup herunterladen</button>
           <button role="menuitem" id="importBtn" title="JSON-Backup oder Startbestand einlesen"><svg viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M4 20h16"/></svg>Import</button>
@@ -439,14 +471,28 @@ const COLOR_KEYS = [['MUTED BLUE','Muted Blue'],['ARMY BLUE','Army Blue'],['OLIV
 const MAT_COLORS = {PLA:'#4c6ef5',PETG:'#e8590c',PCTG:'#ae3ec9',ABS:'#2f9e44',ASA:'#0c8599',TPU:'#f59f00',PA:'#868e96',PC:'#495057',Resin:'#c2255c'};
 const LOW = 150;
 
-const state = { spools:new Map(), reorder:new Map(), names:{}, printers:DEFAULT_PRINTERS.map(p=>({...p})), drawers:DEFAULT_DRAWERS.map(d=>({...d})), drawersStored:false, q:'', mat:null, qual:'alle', loaded:false };
+const DEFAULT_LISTS = { colors: COLORS.map(([name,hex])=>({name,hex})), brands: BRANDS.slice(), finishes: ['Basic','Matt','Glanz','Silk','Transparent','Foamy','Eco'], materials: MATS.slice() };
+const KIND = { colors:{field:'color', label:'Farbe'}, brands:{field:'brand', label:'Marke'}, finishes:{field:'finish', label:'Finish'}, materials:{field:'material', label:'Material'} };
+const state = { spools:new Map(), reorder:new Map(), names:{}, printers:DEFAULT_PRINTERS.map(p=>({...p})), drawers:DEFAULT_DRAWERS.map(d=>({...d})), drawersStored:false, lists:JSON.parse(JSON.stringify(DEFAULT_LISTS)), q:'', mat:null, qual:'alle', loaded:false };
 let db = null;
 const COARSE = matchMedia('(pointer: coarse)').matches;
 const $ = (s,el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kg = g => g >= 1000 ? (g/1000).toLocaleString('de-CH',{maximumFractionDigits:2}) + ' kg' : Math.round(g) + ' g';
 const locName = id => { const pr = state.printers.find(p=>p.id===id); if (pr) return pr.name; const dr = state.drawers.find(d=>d.id===id); if (dr) return (!state.drawersStored && state.names[id]) || dr.name; return state.names[id] || (LOCS.find(l=>l.id===id)||{}).name || id; };
-const hexOf = c => (COLORS.find(x=>x[0].toLowerCase()===String(c||'').toLowerCase())||[])[1] || '';
+const hexOf = c => { const n = String(c||'').toLowerCase(); const l = names('colors').find(x=>x.name.toLowerCase()===n); if (l && l.hex) return l.hex; return (COLORS.find(x=>x[0].toLowerCase()===n)||[])[1] || ''; };
+function names(kind){ return ((state.lists && state.lists[kind]) || DEFAULT_LISTS[kind]).map(x => typeof x==='string' ? {name:x} : {...x}); }
+function listItems(kind){
+  const base = names(kind), seen = new Set(base.map(x=>x.name.toLowerCase())), f = KIND[kind].field;
+  [...state.spools.values()].forEach(s => { const v = String(s[f]||'').trim(); if (v && !seen.has(v.toLowerCase())){ seen.add(v.toLowerCase()); base.push({name:v, hex: kind==='colors' ? s.hex : undefined}); } });
+  return base;
+}
+async function saveLists(){ render(); if (!db) return; try { await db.doc('meta/lists').set(state.lists); } catch(e){ toast('Liste speichern fehlgeschlagen: '+(e.code||e.message)); } }
+function addToLists(entries){ // entries: [[kind, name, hex?], …]
+  let changed = false; const L = {...state.lists};
+  entries.forEach(([kind, name, hex]) => { name = String(name||'').trim(); if (!name) return; if ((L[kind]||[]).some(x => (typeof x==='string'?x:x.name).toLowerCase()===name.toLowerCase())) return; L[kind] = [...(L[kind]||[]), kind==='colors' ? {name, hex: hex||'#888888'} : name]; changed = true; });
+  if (changed){ state.lists = L; saveLists(); } return changed;
+}
 const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
 function parseLabel(txt){
@@ -747,6 +793,7 @@ function connect(){
       render();
     }, err));
     unsubs.push(fs.collection('reorder').onSnapshot(snap => { state.reorder = new Map(snap.docs.map(d=>[d.id,{id:d.id,...d.data()}])); render(); }, err));
+    unsubs.push(fs.doc('meta/lists').onSnapshot(snap => { const d = snap.exists ? snap.data() : {}; state.lists = Object.fromEntries(Object.keys(DEFAULT_LISTS).map(k => [k, Array.isArray(d[k]) ? d[k] : JSON.parse(JSON.stringify(DEFAULT_LISTS[k]))])); render(); }, ()=>{}));
     unsubs.push(fs.doc('meta/drawers').onSnapshot(snap => { const l = snap.exists && snap.data().list; state.drawers = DEFAULT_DRAWERS.map(d => ({...d, ...((Array.isArray(l) && l.find(x=>x.id===d.id)) || {})})); state.drawersStored = Array.isArray(l); render(); }, ()=>{}));
     unsubs.push(fs.doc('meta/printers').onSnapshot(snap => { const l = snap.exists && snap.data().list; state.printers = Array.isArray(l) ? l.map(p=>({...p})) : DEFAULT_PRINTERS.map(p=>({...p})); render(); }, ()=>{}));
     unsubs.push(fs.doc('meta/names').onSnapshot(snap => { state.names = snap.exists ? {...snap.data()} : {}; render(); }, ()=>{}));
@@ -775,20 +822,16 @@ function openSheet(s){
         <div class="quick">${[10,50,100,250].map(n=>`<button type="button" class="btn sm" data-minus="${n}">−${n}</button>`).join('')}<button type="button" class="btn sm" data-setfull="1">voll</button></div>
       </div></div>
       <div class="field"><span class="lbl">Qualität</span><div class="seg" id="fQual"><button type="button" data-q="gut" aria-pressed="${editing.quality!=='test'}">Gut</button><button type="button" data-q="test" aria-pressed="${editing.quality==='test'}">Test</button></div></div>
-      <div class="two"><div class="field"><label for="fMat">Material</label><input id="fMat" list="dlMat" value="${esc(editing.material)}"></div>
-        <div class="field"><label for="fBrand">Marke</label><input id="fBrand" list="dlBrand" value="${esc(editing.brand)}"></div></div>
-      <div class="two"><div class="field"><label for="fCol">Farbe</label><input id="fCol" list="dlCol" value="${esc(editing.color)}"></div>
-        <div class="field"><label for="fFin">Finish</label><input id="fFin" list="dlFin" value="${esc(editing.finish)}" placeholder="Matt, Glanz, Silk…"></div></div>
-      <div class="palette" id="pal">${COLORS.map(([n,h])=>`<button type="button" data-c="${esc(n)}" data-h="${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${editing.color===n}" style="background:${h==='rainbow'?fillCss({hex:'rainbow'}):h}"></button>`).join('')}<input type="color" id="fHex" value="${/^#/.test(editing.hex)?editing.hex:'#888888'}" title="Eigene Farbe" aria-label="Eigene Farbe"></div>
+      <div class="two"><div class="field"><label for="fMat">Material</label>${comboHtml('fMat','materials',editing.material,'z. B. PETG')}</div>
+        <div class="field"><label for="fBrand">Marke</label>${comboHtml('fBrand','brands',editing.brand,'z. B. Bambu Lab')}</div></div>
+      <div class="two"><div class="field"><label for="fCol">Farbe</label>${comboHtml('fCol','colors',editing.color,'z. B. Schwarz', editing.hex)}</div>
+        <div class="field"><label for="fFin">Finish</label>${comboHtml('fFin','finishes',editing.finish,'Matt, Glanz, Silk…')}</div></div>
       <div class="two"><div class="field"><label for="fLoc">Ort</label><select id="fLoc">${locOpts}</select></div>
         <div class="field"><label for="fFull">Rollengrösse (g)</label><input id="fFull" type="number" min="100" step="50" value="${editing.full||1000}"></div></div>
       <div class="field" id="fSlotWrap" hidden><label for="fSlot">Slot im Gerät</label><select id="fSlot"></select></div>
       ${!isNew ? `<div class="field" id="fPosWrap" hidden><span class="lbl">Reihenfolge</span><div class="quick"><button type="button" class="btn sm" id="posL">◀ Nach vorne</button><button type="button" class="btn sm" id="posR">Nach hinten ▶</button><span class="note" id="posInfo" style="align-self:center"></span></div></div>`:''}
       <div class="field"><label for="fNote">Notiz</label><textarea id="fNote" placeholder="z. B. getrocknet am …, Druckprofil">${esc(editing.note||'')}</textarea></div>
-      <datalist id="dlMat">${MATS.map(m=>`<option value="${m}">`).join('')}</datalist>
-      <datalist id="dlBrand">${BRANDS.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
-      <datalist id="dlCol">${COLORS.map(m=>`<option value="${esc(m[0])}">`).join('')}</datalist>
-      <datalist id="dlFin">${['Basic','Matt','Glanz','Silk','Transparent','Foamy','Eco'].map(m=>`<option value="${m}">`).join('')}</datalist>`}
+`}
     <div class="actions" id="acts">
       <button class="btn primary" type="submit">Speichern</button>
       <button class="btn" type="button" id="cancel">Abbrechen</button>
@@ -803,6 +846,7 @@ function openSheet(s){
     editing.weight = Math.max(0, Math.round(+$('#fW').value||0)); editing.full = Math.max(100, +$('#fFull').value||1000);
     editing.material = $('#fMat').value.trim(); editing.brand=$('#fBrand').value.trim(); editing.finish=$('#fFin').value.trim();
     const c = $('#fCol').value.trim(); if (c!==editing.color){ editing.color=c; const h=hexOf(c); if(h) editing.hex=h; }
+    const hx = $('#fHex'); if (hx && /^#/.test(editing.hex||'') && hx.value.toLowerCase()!==editing.hex.toLowerCase()) hx.value = editing.hex;
     editing.note = $('#fNote').value; editing.loc = $('#fLoc').value;
     const sp = slotted(editing.loc), orig = state.spools.get(editing.id);
     $('#fSlotWrap').hidden = !sp;
@@ -821,6 +865,8 @@ function openSheet(s){
     sh.querySelectorAll('#pal button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.c===editing.color));
   };
   sync();
+  initCombos(sh, sync);
+  sh.addEventListener('change', e => { if (e.target.closest('.combo')) sync(); });
   sh.addEventListener('input', e => { if (e.target.id==='fWr') $('#fW').value = e.target.value; if (e.target.id==='fHex'){ editing.hex=e.target.value; } sync(); });
   sh.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
@@ -830,7 +876,7 @@ function openSheet(s){
     if (b.dataset.c){ $('#fCol').value=b.dataset.c; editing.color=b.dataset.c; editing.hex=b.dataset.h; sync(); }
     if (b.id==='cancel') close();
     if (b.id==='posL' || b.id==='posR'){ stepLabel(`${label(editing)}: Reihenfolge geändert`, editing.id); movePos(editing.id, b.id==='posL'?-1:1); editing.pos = state.spools.get(editing.id).pos; sync(); }
-    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now(),slot:0}; stepLabel(`${label(c)} dupliziert`); put(c); toast('Dupliziert'); close(); }
+    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now(),slot:0,loc:'neu'}; stepLabel(`${label(c)} dupliziert`); put(c); toast(`Dupliziert → «${locName('neu')}»`); close(); }
     if (b.id==='used'){ const s=state.spools.get(editing.id); stepLabel(`${label(s)} aufgebraucht → Bestellliste`); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); del(s.id); toast('Rolle entfernt und auf «Zu bestellen» gesetzt'); close(); }
     if (b.id==='delBtn'){ $('#confirmHost').innerHTML = `<div class="confirm">Wirklich löschen? <button type="button" class="btn sm danger" id="yesDel">Ja, löschen</button><button type="button" class="btn sm" id="noDel">Nein</button></div>`; }
     if (b.id==='yesDel'){ del(editing.id); toast('Gelöscht'); close(); }
@@ -839,7 +885,8 @@ function openSheet(s){
   sh.addEventListener('submit', e => {
     e.preventDefault();
     if (isZ){ editing.name=$('#fName').value.trim(); editing.qty=$('#fQty').value.trim(); editing.loc=$('#fLoc').value; if(!editing.name) return; }
-    else { sync(); editing.name = [editing.material,editing.color,editing.finish,editing.brand].filter(Boolean).join(' ').toUpperCase(); editing.quality = editing.quality||'gut'; }
+    else { sync(); editing.name = [editing.material,editing.color,editing.finish,editing.brand].filter(Boolean).join(' ').toUpperCase(); editing.quality = editing.quality||'gut';
+      addToLists([['materials',editing.material],['brands',editing.brand],['finishes',editing.finish],['colors',editing.color,editing.hex]]); }
     stepLabel(isNew ? `${nameOf(editing)} hinzugefügt (${locName(editing.loc)})` : null, editing.id);
     const sp = !isZ && slotted(editing.loc); const slotNo = sp ? +$('#fSlot').value : 0; const orig = state.spools.get(editing.id);
     if (orig && orig.loc!==editing.loc) editing.slot = 0;
@@ -938,6 +985,100 @@ function openDrawer(d){
   if (!matchMedia('(max-width:760px)').matches) $('#dName').focus();
 }
 
+// --- Auswahlfeld zum Tippen oder Auswählen (Material, Marke, Farbe, Finish)
+function comboHtml(id, kind, value, ph, hex){
+  const sw = kind==='colors' ? `<input type="color" id="fHex" class="combo-hex" value="${/^#/.test(hex||'')?hex:'#888888'}" title="Farbton wählen" aria-label="Farbton wählen">` : '';
+  return `<div class="combo${kind==='colors'?' has-hex':''}" data-kind="${kind}">${sw}<input id="${id}" value="${esc(value||'')}" placeholder="${esc(ph||'')}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${id}L"><button type="button" class="combo-btn" tabindex="-1" aria-label="${KIND[kind].label} auswählen"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="combo-list" id="${id}L" role="listbox" hidden></div></div>`;
+}
+function initCombos(root, onPick){
+  root.querySelectorAll('.combo').forEach(box => {
+    const kind = box.dataset.kind, inp = box.querySelector('input:not([type=color])'), list = box.querySelector('.combo-list'), btn = box.querySelector('.combo-btn');
+    let act = -1;
+    const opts = () => [...list.querySelectorAll('.opt[data-v], .opt[data-add]')];
+    const close = () => { list.hidden = true; inp.setAttribute('aria-expanded','false'); act = -1; };
+    const open = (all) => {
+      const raw = inp.value.trim(), q = norm(raw); let items = listItems(kind);
+      const exact = items.some(x => norm(x.name)===q);
+      if (!all && q && !exact) items = items.filter(x => norm(x.name).includes(q));
+      const swatch = x => kind==='colors' ? `<span class="sw" style="background:${x.hex==='rainbow'?fillCss({hex:'rainbow'}):(x.hex||'#888')}"></span>` : '';
+      list.innerHTML = (raw && !exact ? `<button type="button" role="option" class="opt add" data-add="1">+ «${esc(raw)}» als ${KIND[kind].label} hinzufügen</button>` : '')
+        + items.map(x => `<button type="button" role="option" class="opt${norm(x.name)===q?' sel':''}" data-v="${esc(x.name)}" data-h="${esc(x.hex||'')}">${swatch(x)}<span>${esc(x.name)}</span></button>`).join('')
+        + (!items.length && !raw ? '<div class="opt empty">Noch keine Einträge</div>' : '');
+      list.hidden = false; inp.setAttribute('aria-expanded','true'); act = -1;
+      list.querySelector('.sel')?.scrollIntoView({block:'nearest'});
+    };
+    const pick = o => {
+      if (o.dataset.add){ const n = inp.value.trim(); addToLists([[kind, n, kind==='colors' ? box.querySelector('.combo-hex')?.value : undefined]]); toast(`«${n}» als ${KIND[kind].label} hinzugefügt`); }
+      else { inp.value = o.dataset.v; if (kind==='colors' && /^#/.test(o.dataset.h)){ const hx = box.querySelector('.combo-hex'); if (hx){ hx.value = o.dataset.h; hx.dispatchEvent(new Event('input',{bubbles:true})); } } }
+      close(); inp.dispatchEvent(new Event('change',{bubbles:true})); onPick && onPick();
+    };
+    btn.addEventListener('click', () => { if (list.hidden){ open(true); inp.focus(); } else close(); });
+    inp.addEventListener('focus', () => open(true));
+    inp.addEventListener('input', () => open(false));
+    inp.addEventListener('blur', () => setTimeout(close, 150));
+    list.addEventListener('mousedown', e => e.preventDefault());
+    list.addEventListener('click', e => { const o = e.target.closest('.opt[data-v], .opt[data-add]'); if (o) pick(o); });
+    inp.addEventListener('keydown', e => {
+      if (e.key==='Escape' && !list.hidden){ e.stopPropagation(); close(); return; }
+      if (e.key==='ArrowDown' || e.key==='ArrowUp'){ e.preventDefault(); if (list.hidden) open(true); const o = opts(); if (!o.length) return; act = (act + (e.key==='ArrowDown'?1:-1) + o.length) % o.length; o.forEach((x,i)=>x.classList.toggle('act', i===act)); o[act].scrollIntoView({block:'nearest'}); }
+      if (e.key==='Enter' && !list.hidden && act>=0){ e.preventDefault(); pick(opts()[act]); }
+    });
+  });
+}
+
+// --- Listen verwalten (im Printorix-Menü): hinzufügen, umbenennen, Farbton, löschen
+function openLists(kind){
+  kind = kind || 'colors'; editing = {kind:'lists'};
+  const f = KIND[kind].field; const used = n => [...state.spools.values()].filter(s => String(s[f]||'').toLowerCase()===n.toLowerCase()).length;
+  const items = names(kind);
+  $('#sheetHost').innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+    <h3 id="shT">Listen verwalten</h3>
+    <div class="seg" id="lTabs">${Object.keys(KIND).map(k=>`<button type="button" data-lk="${k}" aria-pressed="${k===kind}">${KIND[k].label}</button>`).join('')}</div>
+    <div class="lrows">${items.map((x,i)=>`<div class="lrow" data-i="${i}">
+      ${kind==='colors'?`<input type="color" class="lhex" value="${/^#/.test(x.hex||'')?x.hex:'#888888'}" aria-label="Farbton ${esc(x.name)}">`:''}
+      <input class="lname" value="${esc(x.name)}" aria-label="Name">
+      <span class="lcount" title="So viele Rollen verwenden diesen Wert">${used(x.name)}×</span>
+      <button type="button" class="icon-btn ldel" aria-label="${esc(x.name)} löschen"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+    </div>`).join('') || '<div class="empty">Noch keine Einträge.</div>'}</div>
+    <div class="addrow">${kind==='colors'?'<input type="color" id="lNewHex" value="#888888" aria-label="Farbton">':''}<input id="lNew" placeholder="Neue ${KIND[kind].label} …" aria-label="Neue ${KIND[kind].label}"><button type="button" class="btn sm primary" id="lAdd">Hinzufügen</button></div>
+    <p class="note">Umbenennen und Farbton ändern gilt auch für alle Rollen mit diesem Wert. Beim Löschen behalten die Rollen ihren Wert, er verschwindet nur aus der Auswahl.</p>
+    <div class="actions"><button class="btn primary" type="button" id="lDone">Fertig</button></div>
+  </form></div>`;
+  const sh = $('#sheet');
+  const reopen = () => openLists(kind);
+  const setList = arr => { state.lists = {...state.lists, [kind]: arr}; saveLists(); };
+  const raw = () => (state.lists[kind]||[]).map(x => typeof x==='string' ? x : {...x});
+  sh.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.lk){ openLists(b.dataset.lk); return; }
+    if (b.id==='lDone'){ close(); return; }
+    if (b.id==='lAdd'){ const n = $('#lNew').value.trim(); if (!n) return $('#lNew').focus(); if (!addToLists([[kind, n, $('#lNewHex')?.value]])) toast(`«${n}» gibt es schon`); reopen(); setTimeout(()=>$('#lNew')?.focus(), 0); return; }
+    const row = b.closest('.lrow'); if (!row) return; const i = +row.dataset.i; const it = names(kind)[i];
+    if (b.classList.contains('ldel')){ row.innerHTML = `<span class="confirm">«${esc(it.name)}» löschen?${used(it.name)?` ${used(it.name)} Rolle${used(it.name)>1?'n behalten':' behält'} den Wert.`:''} <button type="button" class="btn sm danger" data-yes="1">Ja, löschen</button><button type="button" class="btn sm" data-no="1">Nein</button></span>`; return; }
+    if (b.dataset.no){ reopen(); return; }
+    if (b.dataset.yes){ const a = raw(); a.splice(i,1); setList(a); toast(`«${it.name}» gelöscht`); reopen(); return; }
+  });
+  sh.addEventListener('change', e => {
+    const row = e.target.closest('.lrow'); if (!row) return; const i = +row.dataset.i; const it = names(kind)[i]; const a = raw();
+    if (e.target.classList.contains('lname')){
+      const n = e.target.value.trim(); if (!n || n===it.name){ e.target.value = it.name; return; }
+      if (names(kind).some((x,j)=>j!==i && x.name.toLowerCase()===n.toLowerCase())){ toast(`«${n}» gibt es schon`); e.target.value = it.name; return; }
+      a[i] = typeof a[i]==='string' ? n : {...a[i], name:n}; setList(a);
+      const hits = [...state.spools.values()].filter(s => String(s[f]||'').toLowerCase()===it.name.toLowerCase());
+      if (hits.length){ stepLabel(`«${it.name}» → «${n}» umbenannt`); hits.forEach(s => put({...s, [f]:n, name: nameFrom({...s, [f]:n})})); }
+      toast(hits.length ? `Umbenannt – ${hits.length} Rolle${hits.length>1?'n':''} angepasst` : 'Umbenannt'); reopen();
+    }
+    if (e.target.classList.contains('lhex')){
+      const hx = e.target.value; a[i] = {...a[i], hex:hx}; setList(a);
+      const hits = [...state.spools.values()].filter(s => String(s.color||'').toLowerCase()===it.name.toLowerCase() && s.hex!==hx);
+      if (hits.length){ stepLabel(`Farbton «${it.name}» geändert`); hits.forEach(s => put({...s, hex:hx})); }
+    }
+  });
+  sh.addEventListener('keydown', e => { if (e.key==='Enter' && e.target.id==='lNew'){ e.preventDefault(); $('#lAdd').click(); } if (e.key==='Enter' && e.target.classList.contains('lname')){ e.preventDefault(); e.target.blur(); } });
+  $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
+}
+const nameFrom = s => [s.material,s.color,s.finish,s.brand].filter(Boolean).join(' ').toUpperCase();
+
 // --- Rename
 function rename(id){
   const host = document.querySelector(`[data-loc="${id}"] .nm`); if(!host) return;
@@ -974,7 +1115,7 @@ $('#q').addEventListener('input', e => { state.q = e.target.value; render(); });
 $('#addBtn').addEventListener('click', () => openSheet(blank('neu')));
 $('#addZub').addEventListener('click', () => openSheet({id:newId('z'),kind:'zubehoer',name:'',qty:'',loc:'s8',pos:Date.now()}));
 $('#backupBtn').addEventListener('click', () => {
-  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names, printers:state.printers, drawers:state.drawers};
+  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names, printers:state.printers, drawers:state.drawers, lists:state.lists};
   saveFile(`filamentlager-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(out,null,1), 'application/json');
 });
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
@@ -1004,6 +1145,7 @@ $('#importFile').addEventListener('change', async e => {
     if (data.names && Object.keys(data.names).length) await db.doc('meta/names').set(data.names);
     if (Array.isArray(data.printers) && data.printers.length) await db.doc('meta/printers').set({list:data.printers});
     if (Array.isArray(data.drawers) && data.drawers.length) await db.doc('meta/drawers').set({list:data.drawers});
+    if (data.lists && typeof data.lists==='object') await db.doc('meta/lists').set(data.lists);
     hist.undo=[]; hist.redo=[]; updHist();
     toast(removeIds.length ? `Bestand ersetzt: ${nNew} Einträge` : `${writes.length} Einträge importiert`);
   } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
@@ -1127,6 +1269,7 @@ $('#menuPop').addEventListener('click', e => { if (e.target.closest('button') &&
 // Dunkelmodus ein/aus (wird pro Gerät gespeichert)
 const isDark = () => { const t = document.documentElement.getAttribute('data-theme'); return t ? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; };
 function syncTheme(){ $('#themeBtn').setAttribute('aria-checked', isDark()); const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', isDark()?'#0F1722':'#FFFFFF'); }
+$('#listsBtn').addEventListener('click', () => openLists('colors'));
 $('#themeBtn').addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); try{ localStorage.setItem('fl-theme', t); }catch(_){} syncTheme(); });
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', syncTheme);
 syncTheme();
