@@ -95,6 +95,11 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .drop-on{box-shadow:0 0 0 2px var(--accent) inset}
 .loc{border-radius:8px}
 .icon-btn{width:26px;height:26px;border-radius:6px;border:0;background:transparent;display:inline-grid;place-items:center;color:inherit;opacity:.65}
+.panel .lh{flex-wrap:wrap;row-gap:4px}
+.panel .lh .nm{white-space:normal;min-width:0;flex:1 1 auto}
+.panel .lh>span:last-child{margin-left:auto}
+.printer .slots,.panel .spools{min-width:0}
+.icon-btn:disabled{opacity:.2;cursor:default;background:transparent}
 .icon-btn:hover{opacity:1;background:rgba(127,127,127,.18)}
 .icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
 
@@ -415,9 +420,11 @@ function spoolBtn(s,onCab){
 function zubHtml(s){ const c = filtering()?(matches(s)?' match':' dim'):''; return `<button class="ztag${c}" data-id="${esc(s.id)}" draggable="true">${esc(s.name)}${s.qty?` <span style="opacity:.6">${esc(s.qty)}</span>`:''}</button>`; }
 const pencil = `<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>`;
 const plus = `<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
+const up = `<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>`;
+const down = `<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
 function head(l, items){
   const f = fil(items); const meta = f.length ? `${f.length} · ${kg(sumG(items))}` : (items.length? `${items.length} Teile` : 'leer');
-  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span>${l.zone==='printer'?`<button class="icon-btn" data-dev="${l.id}" aria-label="${esc(locName(l.id))} bearbeiten">${pencil}</button>`:`<button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button>`}<button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
+  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span>${l.zone==='printer'?(()=>{ const i=state.printers.findIndex(x=>x.id===l.id), last=state.printers.length-1; return `<button class="icon-btn" data-mv="${l.id}" data-dir="-1" aria-label="${esc(locName(l.id))} nach oben" ${i<=0?'disabled':''}>${up}</button><button class="icon-btn" data-mv="${l.id}" data-dir="1" aria-label="${esc(locName(l.id))} nach unten" ${i>=last?'disabled':''}>${down}</button>`; })():''}${l.zone==='printer'?`<button class="icon-btn" data-dev="${l.id}" aria-label="${esc(locName(l.id))} bearbeiten">${pencil}</button>`:`<button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button>`}<button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
 }
 function drawer(l){
   const items = inLoc(l.id); const f = fil(items), z = items.filter(s=>s.kind==='zubehoer');
@@ -698,6 +705,7 @@ function rename(id){
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b || b.closest('#sheet')) return;
   if (b.dataset.id){ const s=state.spools.get(b.dataset.id); if(s) openSheet(s); return; }
+  if (b.dataset.mv){ const l=state.printers.map(x=>({...x})); const i=l.findIndex(x=>x.id===b.dataset.mv), j=i+(+b.dataset.dir); if(i<0||j<0||j>=l.length) return; [l[i],l[j]]=[l[j],l[i]]; savePrinters(l); requestAnimationFrame(()=>{ const el=document.querySelector(`[data-loc="${l[j].id}"]`); if(el){ el.scrollIntoView({block:'nearest'}); const btn=el.querySelector(`[data-mv][data-dir="${b.dataset.dir}"]`); (btn && !btn.disabled ? btn : el.querySelector('[data-dev]'))?.focus(); } }); return; }
   if (b.dataset.dev){ openDevice(b.dataset.dev); return; }
   if (b.id==='addDev'){ openDevice(null); return; }
   if (b.dataset.add){ openSheet(blank(b.dataset.add)); return; }
