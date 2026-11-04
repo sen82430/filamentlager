@@ -129,7 +129,10 @@ h1 small{font-family:var(--mono);font-size:12.5px;font-weight:400;color:var(--mu
 .drawer .spool .w{color:var(--drawer-ink)}
 .spool.low .w{color:var(--low);font-weight:700}
 .drawer .spool.low .w{color:#FFB4B4}
-.badge{position:absolute;top:-2px;right:calc(50% - 30px);font-family:var(--mono);font-size:10px;font-weight:500;line-height:1;padding:3px 4px;border-radius:4px;background:var(--warn);color:#111}
+.discwrap{position:relative;display:grid;place-items:center}
+.slot .spool{align-content:start}
+.slot .spool .t{min-height:2.3em}
+.badge{position:absolute;top:-5px;right:-12px;font-family:var(--mono);font-size:10px;font-weight:500;line-height:1;padding:3px 4px;border-radius:4px;background:var(--warn);color:#111}
 .spool.dim{opacity:.13}
 .spool.match .disc{box-shadow:0 0 0 1px var(--ring-line),0 0 0 3px var(--accent)}
 .spool.test .disc .fill{outline:2px dashed var(--warn);outline-offset:2px}
@@ -489,7 +492,7 @@ const sumG = arr => fil(arr).reduce((a,s)=>a+(+s.weight||0),0);
 function spoolBtn(s,onCab){
   const cls = ['spool']; if (s.weight<=LOW) cls.push('low'); if (s.quality==='test') cls.push('test');
   if (filtering()) cls.push(matches(s)?'match':'dim');
-  return `<button class="${cls.join(' ')}" draggable="true" data-id="${esc(s.id)}" title="${esc(title(s))}">${discHtml(s,onCab)}${s.quality==='test'?'<span class="badge">TEST</span>':''}<span class="t">${esc(label(s))}</span><span class="w">${s.weight} g</span></button>`;
+  return `<button class="${cls.join(' ')}" draggable="true" data-id="${esc(s.id)}" title="${esc(title(s))}"><span class="t">${esc(label(s))}</span><span class="discwrap">${discHtml(s,onCab)}${s.quality==='test'?'<span class="badge">TEST</span>':''}</span><span class="w">${s.weight} g</span></button>`;
 }
 function zubHtml(s){ const c = filtering()?(matches(s)?' match':' dim'):''; return `<button class="ztag${c}" data-id="${esc(s.id)}" draggable="true">${esc(s.name)}${s.qty?` <span style="opacity:.6">${esc(s.qty)}</span>`:''}</button>`; }
 const pencil = `<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>`;
