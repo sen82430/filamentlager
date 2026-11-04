@@ -75,6 +75,7 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 /* Raster */
 .board{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:980px){.board{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px) and (min-width:981px){.slots.c6{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sect-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
 .sect-h h2{font-family:var(--display);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.12em;margin:0;color:var(--muted)}
 .sect-h .sum{font-family:var(--mono);font-size:12px;color:var(--muted)}
@@ -120,6 +121,7 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .spool.test .disc .fill{outline:2px dashed var(--warn);outline-offset:2px}
 .spool.dragging{opacity:.4}
 .zub{display:flex;flex-wrap:wrap;gap:5px}
+button.ztag{cursor:pointer}
 .ztag{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:inherit;border-radius:5px;padding:3px 7px;font-size:11.5px}
 .ztag.dim{opacity:.18}.ztag.match{border-color:var(--accent)}
 .empty{font-size:12px;opacity:.55;font-style:italic;padding:6px 2px}
@@ -130,7 +132,17 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .panel .lh .nm{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.05em;text-transform:uppercase}
 .panel .lh .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .stack{display:grid;gap:10px}
-.printer .slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;min-width:0}
+.slots.c1{grid-template-columns:minmax(0,1fr)}.slots.c2{grid-template-columns:repeat(2,minmax(0,1fr))}.slots.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.slots.c6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.drawer .slot{border-color:rgba(255,255,255,.14);min-height:80px}
+.drawer .slot.filled{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.03)}
+.drawer .slot .no{color:var(--drawer-muted)}
+.slot .spool .t{max-width:calc(100% - 6px);white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:clip}
+.slot{padding:6px 2px}
+.ztag.addz{border-style:dashed;opacity:.7;cursor:pointer}
+.ztag.addz:hover{opacity:1}
+.panel .ztag{border-color:var(--line);background:var(--bg)}
+.zub:empty{display:none}
 .printer .slots.free{grid-template-columns:repeat(auto-fill,minmax(58px,1fr))}
 .slot{border:1px dashed var(--line);border-radius:8px;min-height:84px;display:grid;place-items:center;padding:4px 0}
 .slot.filled{border-style:solid}
@@ -219,7 +231,12 @@ h1{flex-wrap:wrap}
   section[data-sec]:not(.on){display:none}
   body.searching section[data-sec]{display:none}
   body.searching #results{display:block}
-  .crow.top,.crow.half{grid-template-columns:minmax(0,1fr)}
+  .crow.top{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .crow.half{grid-template-columns:minmax(0,1fr)}
+  .slots.c6{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .crow.top .drawer{padding:18px 8px 8px}
+  .crow.top .slot .disc{width:46px;height:46px}.crow.top .slot .disc .fill{width:35px;height:35px}
+  .crow.top .slot{min-height:76px}
   .cabinet{padding:8px;gap:8px;border-bottom-width:6px}
   .drawer{min-height:0;padding:18px 12px 12px}
   .spools,.printer .slots.free,.floor .panel .spools{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:12px 6px}
@@ -339,18 +356,17 @@ h1{flex-wrap:wrap}
 <script>
 (() => {
 const LOCS = [
-  {id:'s1',name:'Schublade 1',zone:'top'},{id:'s2',name:'Schublade 2',zone:'top'},{id:'s3',name:'Schublade 3',zone:'top'},{id:'s4',name:'Schublade 4',zone:'top'},
-  {id:'s5',name:'Schublade 5',zone:'mid'},{id:'s6',name:'Schublade 6',zone:'mid'},
-  {id:'s7',name:'Schublade 7',zone:'bot'},{id:'s8',name:'Schublade 8',zone:'bot'},
   {id:'bodenS',name:'Reihe 1 · Schwarz',zone:'floor'},{id:'bodenW',name:'Reihe 2 · Weiss',zone:'floor'},
   {id:'neu',name:'Noch einzuordnen',zone:'inbox'},{id:'bestellt',name:'In Bestellung',zone:'inbox'}
 ];
+const DEFAULT_DRAWERS = [1,2,3,4,5,6,7,8].map(n=>({id:'s'+n, name:'Schublade '+n, slots: n<=4?4:12}));
+const drawerZone = id => ({s1:'top',s2:'top',s3:'top',s4:'top',s5:'mid',s6:'mid',s7:'bot',s8:'bot'})[id];
 const DEFAULT_PRINTERS = [
   {id:'h2s',name:'Bambu Lab H2S · AMS',slots:4},{id:'h2s2',name:'H2S · Zusatz',slots:0},
   {id:'h2d',name:'Bambu Lab H2D · AMS',slots:0},{id:'a1',name:'Bambu Lab A1 mini',slots:4},
   {id:'dry',name:'Sovol Filamenttrockner',slots:0}
 ];
-const locs = () => [...LOCS.filter(l=>['top','mid','bot'].includes(l.zone)), ...state.printers.map(p=>({...p,zone:'printer'})), ...LOCS.filter(l=>['floor','inbox'].includes(l.zone))];
+const locs = () => [...state.drawers.map(d=>({...d,zone:drawerZone(d.id),drawer:true})), ...state.printers.map(p=>({...p,zone:'printer'})), ...LOCS.filter(l=>['floor','inbox'].includes(l.zone))];
 const MATS = ['PLA','PETG','PCTG','ABS','ASA','TPU','PA','PC','Resin'];
 const BRANDS = ['Bambu Lab','3DJake','Extrudr','Prusament','Polymaker','eSun','Sunlu','Elegoo'];
 const COLORS = [['Schwarz','#1c1c1e'],['Weiss','#f4f4f2'],['Grau','#8a8d90'],['Rot','#d0312d'],['Orange','#f28b2c'],['Gelb','#f5c518'],['Gold','#c9a227'],['Beige','#d9c6a5'],['Braun','#7a4b2a'],['Holz','#a87b4f'],['Olivgrün','#6b7a3a'],['Grün','#2e9e4f'],['Hellgrün','#8fd16a'],['Türkis','#1fb5ad'],['Blau','#2c62c9'],['Muted Blue','#6d86a3'],['Army Blue','#3e4f5f'],['Pink','#f08bb4'],['Marmor','#cfcac2'],['Klar','#dfeaf0'],['Rainbow','rainbow']];
@@ -358,12 +374,12 @@ const COLOR_KEYS = [['MUTED BLUE','Muted Blue'],['ARMY BLUE','Army Blue'],['OLIV
 const MAT_COLORS = {PLA:'#4c6ef5',PETG:'#e8590c',PCTG:'#ae3ec9',ABS:'#2f9e44',ASA:'#0c8599',TPU:'#f59f00',PA:'#868e96',PC:'#495057',Resin:'#c2255c'};
 const LOW = 150;
 
-const state = { spools:new Map(), reorder:new Map(), names:{}, printers:DEFAULT_PRINTERS.map(p=>({...p})), q:'', mat:null, qual:'alle', loaded:false };
+const state = { spools:new Map(), reorder:new Map(), names:{}, printers:DEFAULT_PRINTERS.map(p=>({...p})), drawers:DEFAULT_DRAWERS.map(d=>({...d})), drawersStored:false, q:'', mat:null, qual:'alle', loaded:false };
 let db = null;
 const $ = (s,el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kg = g => g >= 1000 ? (g/1000).toLocaleString('de-CH',{maximumFractionDigits:2}) + ' kg' : Math.round(g) + ' g';
-const locName = id => { const pr = state.printers.find(p=>p.id===id); if (pr) return pr.name; return state.names[id] || (LOCS.find(l=>l.id===id)||{}).name || id; };
+const locName = id => { const pr = state.printers.find(p=>p.id===id); if (pr) return pr.name; const dr = state.drawers.find(d=>d.id===id); if (dr) return (!state.drawersStored && state.names[id]) || dr.name; return state.names[id] || (LOCS.find(l=>l.id===id)||{}).name || id; };
 const hexOf = c => (COLORS.find(x=>x[0].toLowerCase()===String(c||'').toLowerCase())||[])[1] || '';
 const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
@@ -425,14 +441,21 @@ const up = `<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>`;
 const down = `<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
 function head(l, items){
   const f = fil(items); const meta = f.length ? `${f.length} · ${kg(sumG(items))}` : (items.length? `${items.length} Teile` : 'leer');
-  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span>${l.zone==='printer'?(()=>{ const i=state.printers.findIndex(x=>x.id===l.id), last=state.printers.length-1; return `<button class="icon-btn" data-mv="${l.id}" data-dir="-1" aria-label="${esc(locName(l.id))} nach oben" ${i<=0?'disabled':''}>${up}</button><button class="icon-btn" data-mv="${l.id}" data-dir="1" aria-label="${esc(locName(l.id))} nach unten" ${i>=last?'disabled':''}>${down}</button>`; })():''}${l.zone==='printer'?`<button class="icon-btn" data-dev="${l.id}" aria-label="${esc(locName(l.id))} bearbeiten">${pencil}</button>`:`<button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button>`}<button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
+  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span>${l.zone==='printer'?(()=>{ const i=state.printers.findIndex(x=>x.id===l.id), last=state.printers.length-1; return `<button class="icon-btn" data-mv="${l.id}" data-dir="-1" aria-label="${esc(locName(l.id))} nach oben" ${i<=0?'disabled':''}>${up}</button><button class="icon-btn" data-mv="${l.id}" data-dir="1" aria-label="${esc(locName(l.id))} nach unten" ${i>=last?'disabled':''}>${down}</button>`; })():''}${(l.zone==='printer'||l.drawer)?`<button class="icon-btn" data-dev="${l.id}" aria-label="${esc(locName(l.id))} bearbeiten">${pencil}</button>`:`<button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button>`}<button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
+}
+function slotCols(l, n){ if (l.drawer) return n<=4 ? 2 : n<=9 ? 3 : 6; return Math.max(1, Math.min(4, n)); }
+function slotGrid(l, onCab){
+  const cells = slotLayout(l);
+  return `<div class="slots c${slotCols(l, cells.length)}">${cells.map((s,i)=>`<div class="slot${s?' filled':''}" data-slot="${i+1}" data-sloc="${l.id}">${s?spoolBtn(s,onCab):`<span class="no">${i+1}</span>`}</div>`).join('')}</div>`;
+}
+function zubRow(l){
+  const z = inLoc(l.id).filter(s=>s.kind==='zubehoer');
+  return `<div class="zub">${z.map(zubHtml).join('')}<button class="ztag addz" data-addz="${l.id}" aria-label="Zubehör in ${esc(locName(l.id))} hinzufügen">+ Zubehör</button></div>`;
 }
 function drawer(l){
-  const items = inLoc(l.id); const f = fil(items), z = items.filter(s=>s.kind==='zubehoer');
-  return `<div class="drawer loc" data-loc="${l.id}">${head(l,items)}
-    ${f.length?`<div class="spools">${f.map(s=>spoolBtn(s,true)).join('')}</div>`:''}
-    ${z.length?`<div class="zub">${z.map(zubHtml).join('')}</div>`:''}
-    ${!items.length?'<div class="empty">leer – Rolle hierher ziehen</div>':''}</div>`;
+  const items = inLoc(l.id); const f = fil(items);
+  const body = +l.slots ? slotGrid(l, true) : (f.length ? `<div class="spools">${f.map(s=>spoolBtn(s,true)).join('')}</div>` : '<div class="empty">leer – Rolle hierher ziehen</div>');
+  return `<div class="drawer loc" data-loc="${l.id}">${head(l,items)}${body}${zubRow(l)}</div>`;
 }
 function slotLayout(l){
   const items = fil(inLoc(l.id)); const n = Math.max(+l.slots||0, items.length); const cells = Array(n).fill(null); const rest = [];
@@ -442,13 +465,10 @@ function slotLayout(l){
 }
 function printer(l){
   const items = fil(inLoc(l.id));
-  let body;
-  if (+l.slots) {
-    body = `<div class="slots">${slotLayout(l).map((s,i)=>`<div class="slot${s?' filled':''}" data-slot="${i+1}" data-sloc="${l.id}">${s?spoolBtn(s,false):`<span class="no">Slot ${i+1}</span>`}</div>`).join('')}</div>`;
-  } else body = items.length ? `<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>` : '<div class="empty">leer</div>';
-  return `<div class="panel printer loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${body}</div>`;
+  const body = +l.slots ? slotGrid(l, false) : (items.length ? `<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>` : '<div class="empty">leer</div>');
+  return `<div class="panel printer loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${body}${zubRow(l)}</div>`;
 }
-const slotted = id => { const p = state.printers.find(x=>x.id===id); return p && +p.slots ? p : null; };
+const slotted = id => { const p = state.printers.find(x=>x.id===id) || state.drawers.find(x=>x.id===id); return p && +p.slots ? p : null; };
 // Rolle in einen Slot setzen; belegter Slot wird getauscht, alle anderen behalten ihren Platz
 function setSlot(spoolId, locId, slotNo){
   const p = slotted(locId); const s = state.spools.get(spoolId); if (!p || !s) return;
@@ -475,7 +495,7 @@ function insertBefore(spoolId, targetId){
 }
 function simplePanel(l, extra=''){
   const items = fil(inLoc(l.id));
-  return `<div class="panel loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${items.length?`<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>`:'<div class="empty">leer</div>'}${extra}</div>`;
+  return `<div class="panel loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${items.length?`<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>`:'<div class="empty">leer</div>'}${zubRow(l)}${extra}</div>`;
 }
 function reorderPanel(){
   const items = [...state.reorder.values()].sort((a,b)=>(a.created||0)-(b.created||0));
@@ -584,6 +604,7 @@ function connect(){
       render();
     }, err));
     unsubs.push(fs.collection('reorder').onSnapshot(snap => { state.reorder = new Map(snap.docs.map(d=>[d.id,{id:d.id,...d.data()}])); render(); }, err));
+    unsubs.push(fs.doc('meta/drawers').onSnapshot(snap => { const l = snap.exists && snap.data().list; state.drawers = DEFAULT_DRAWERS.map(d => ({...d, ...((Array.isArray(l) && l.find(x=>x.id===d.id)) || {})})); state.drawersStored = Array.isArray(l); render(); }, ()=>{}));
     unsubs.push(fs.doc('meta/printers').onSnapshot(snap => { const l = snap.exists && snap.data().list; state.printers = Array.isArray(l) ? l.map(p=>({...p})) : DEFAULT_PRINTERS.map(p=>({...p})); render(); }, ()=>{}));
     unsubs.push(fs.doc('meta/names').onSnapshot(snap => { state.names = snap.exists ? {...snap.data()} : {}; render(); }, ()=>{}));
   });
@@ -690,12 +711,19 @@ document.addEventListener('keydown', e => { if (e.key==='Escape' && editing) clo
 const blank = loc => ({id:newId('f'),kind:'filament',name:'',material:'PLA',color:'Schwarz',hex:'#1c1c1e',brand:'',finish:'',weight:1000,full:1000,quality:'gut',loc:loc||'neu',pos:Date.now(),note:''});
 
 // --- Drucker / Trockner verwalten
+async function saveDrawers(list){
+  state.drawers = list.map(d=>({...d})); state.drawersStored = true; render();
+  if (!db) return;
+  try { await db.doc('meta/drawers').set({list:state.drawers}); } catch(e){ toast('Speichern fehlgeschlagen: '+(e.code||e.message)); }
+}
 async function savePrinters(list){
   state.printers = list.map(p=>({...p})); render();
   if (!db) return;
   try { await db.doc('meta/printers').set({list:state.printers}); } catch(e){ toast('Speichern fehlgeschlagen: '+(e.code||e.message)); }
 }
 function openDevice(id){
+  const dr = id && state.drawers.find(x=>x.id===id);
+  if (dr) return openDrawer(dr);
   const isNew = !id; const p = isNew ? {id:newId('p'), name:'', slots:4} : {...state.printers.find(x=>x.id===id)};
   if (!p || !p.id) return;
   const idx = state.printers.findIndex(x=>x.id===p.id); const n = fil(inLoc(p.id)).length + inLoc(p.id).filter(s=>s.kind==='zubehoer').length;
@@ -740,6 +768,30 @@ function openDevice(id){
   if (!matchMedia('(max-width:760px)').matches) $('#dName').focus();
 }
 
+function openDrawer(d){
+  editing = {kind:'drawer'};
+  const n = fil(inLoc(d.id)).length;
+  $('#sheetHost').innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+    <h3 id="shT">Schublade bearbeiten</h3>
+    <div class="field"><label for="dName">Name</label><input id="dName" value="${esc(locName(d.id))}" placeholder="z. B. Schublade 1 · PLA" required></div>
+    <div class="field"><label for="dSlots">Slots</label><input id="dSlots" type="number" min="0" max="48" step="1" value="${+d.slots||0}">
+      <span class="note">Anzahl Plätze für Rollen. 0 = ohne feste Slots. Zubehör zählt nicht dazu. Aktuell ${n} Rolle${n===1?'':'n'} drin.</span></div>
+    <div class="quick"><span class="lbl" style="align-self:center;margin-right:4px">Slots</span>${[0,4,6,8,12,16].map(v=>`<button type="button" class="btn sm" data-slots="${v}">${v||'frei'}</button>`).join('')}</div>
+    <div class="actions"><button class="btn primary" type="submit">Speichern</button><button class="btn" type="button" id="cancel">Abbrechen</button></div>
+  </form></div>`;
+  const sh = $('#sheet');
+  sh.addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; if (b.dataset.slots!==undefined) $('#dSlots').value=b.dataset.slots; if (b.id==='cancel') close(); });
+  sh.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#dName').value.trim(); if(!name) return $('#dName').focus();
+    const slots = Math.max(0, Math.min(48, Math.round(+$('#dSlots').value||0)));
+    saveDrawers(state.drawers.map(x => x.id===d.id ? {...x, name, slots} : {...x, name: locName(x.id)}));
+    toast(n>slots && slots ? `Gespeichert – ${n-slots} Rolle${n-slots>1?'n':''} über der Slot-Anzahl` : 'Gespeichert'); close();
+  });
+  $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
+  if (!matchMedia('(max-width:760px)').matches) $('#dName').focus();
+}
+
 // --- Rename
 function rename(id){
   const host = document.querySelector(`[data-loc="${id}"] .nm`); if(!host) return;
@@ -755,6 +807,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b || b.closest('#sheet')) return;
   if (b.dataset.id){ const s=state.spools.get(b.dataset.id); if(s) openSheet(s); return; }
   if (b.dataset.mv){ const l=state.printers.map(x=>({...x})); const i=l.findIndex(x=>x.id===b.dataset.mv), j=i+(+b.dataset.dir); if(i<0||j<0||j>=l.length) return; [l[i],l[j]]=[l[j],l[i]]; savePrinters(l); requestAnimationFrame(()=>{ const el=document.querySelector(`[data-loc="${l[j].id}"]`); if(el){ el.scrollIntoView({block:'nearest'}); const btn=el.querySelector(`[data-mv][data-dir="${b.dataset.dir}"]`); (btn && !btn.disabled ? btn : el.querySelector('[data-dev]'))?.focus(); } }); return; }
+  if (b.dataset.addz){ openSheet({id:newId('z'),kind:'zubehoer',name:'',qty:'',loc:b.dataset.addz,pos:Date.now()}); return; }
   if (b.dataset.dev){ openDevice(b.dataset.dev); return; }
   if (b.id==='addDev'){ openDevice(null); return; }
   if (b.dataset.add){ openSheet(blank(b.dataset.add)); return; }
@@ -781,7 +834,7 @@ $('#csvBtn').addEventListener('click', async () => {
   saveFile(`Lagerbestand_Filament_${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv;charset=utf-8');
 });
 $('#backupBtn').addEventListener('click', () => {
-  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names, printers:state.printers};
+  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names, printers:state.printers, drawers:state.drawers};
   saveFile(`filamentlager-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(out,null,1), 'application/json');
 });
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
@@ -810,6 +863,7 @@ $('#importFile').addEventListener('change', async e => {
     for (let i=0;i<ops.length;i+=400){ const b=db.batch(); ops.slice(i,i+400).forEach(([op,c,x])=>{ if(op==='del') b.delete(db.collection(c).doc(x)); else { const {id,...body}=x; b.set(db.collection(c).doc(String(id)), body); } }); await b.commit(); }
     if (data.names && Object.keys(data.names).length) await db.doc('meta/names').set(data.names);
     if (Array.isArray(data.printers) && data.printers.length) await db.doc('meta/printers').set({list:data.printers});
+    if (Array.isArray(data.drawers) && data.drawers.length) await db.doc('meta/drawers').set({list:data.drawers});
     toast(removeIds.length ? `Bestand ersetzt: ${nNew} Einträge` : `${writes.length} Einträge importiert`);
   } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
 });
