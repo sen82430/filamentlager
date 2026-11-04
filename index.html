@@ -177,6 +177,8 @@ button.ztag{cursor:pointer}
 /* Bestellen */
 .drophint{display:none;font-size:12.5px;color:var(--accent);border:1.5px dashed var(--accent);border-radius:8px;padding:10px;text-align:center}
 body:has(.dragging) .drophint,#reorderPanel.drop-on .drophint{display:block}
+.order-list .armed{animation:pulse .9s ease-in-out infinite alternate}
+@keyframes pulse{from{box-shadow:0 0 0 0 var(--low)}to{box-shadow:0 0 0 3px color-mix(in srgb,var(--low) 35%,transparent)}}
 .order-list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .order-list li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border-radius:7px;background:var(--bg)}
 .sw{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
@@ -613,6 +615,7 @@ function simplePanel(l, extra=''){
   const items = fil(inLoc(l.id));
   return `<div class="panel loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${items.length?`<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>`:'<div class="empty">leer</div>'}${zubRow(l)}${extra}</div>`;
 }
+let armedOrder = null, armedTimer = 0;
 function reorderPanel(){
   const items = [...state.reorder.values()].sort((a,b)=>(b.created||0)-(a.created||0));
   const listed = new Set(items.map(r=>(r.name||'').toLowerCase()));
@@ -620,7 +623,7 @@ function reorderPanel(){
   const seen = new Set(); const sugg = low.filter(s=>{ const k=label(s).toLowerCase(); if(seen.has(k)||listed.has(k)) return false; seen.add(k); return true; });
   return `<div class="panel loc" id="reorderPanel" data-loc="__reorder"><div class="lh"><span class="nm">Zu bestellen</span><span class="meta">${items.length} Positionen</span></div>
     <div class="drophint">Rolle hierher ziehen, um sie auf die Bestellliste zu setzen</div>
-    ${items.length?`<ul class="order-list">${items.map(r=>`<li><span class="sw" style="background:${fillCss(r)}"></span><span style="min-width:0"><div class="nm">${esc(r.name)}</div><div class="q">${r.qty||1}× ${r.brand?esc(r.brand):''}</div></span><span class="acts"><button class="btn sm" data-ordered="${esc(r.id)}" title="Als bestellt markieren – erscheint unter «In Bestellung»">Bestellt</button><button class="icon-btn" data-delorder="${esc(r.id)}" aria-label="Entfernen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></li>`).join('')}</ul>`:'<div class="empty" style="color:var(--muted)">Nichts offen.</div>'}
+    ${items.length?`<ul class="order-list">${items.map(r=>`<li><span class="sw" style="background:${fillCss(r)}"></span><span style="min-width:0"><div class="nm">${esc(r.name)}</div><div class="q">${r.qty||1}× ${r.brand?esc(r.brand):''}</div></span><span class="acts"><button class="btn sm" data-ordered="${esc(r.id)}" title="Als bestellt markieren – erscheint unter «In Bestellung»">Bestellt</button>${armedOrder===r.id ? `<button class="btn sm danger armed" data-delorder="${esc(r.id)}" aria-label="Nochmals tippen zum Löschen">Löschen?</button>` : `<button class="icon-btn" data-delorder="${esc(r.id)}" aria-label="Entfernen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`}</span></li>`).join('')}</ul>`:'<div class="empty" style="color:var(--muted)">Nichts offen.</div>'}
     <form class="addrow" id="orderForm"><input id="orderTxt" placeholder="z. B. PETG Basic Schwarz Bambu" aria-label="Was bestellen"><input id="orderQty" type="number" min="1" value="1" aria-label="Anzahl"><button class="btn sm primary" type="submit">Hinzufügen</button></form>
     ${sugg.length?`<div class="lbl">Fast leer (≤ ${LOW} g)</div><div class="sugg">${sugg.map(s=>`<button data-sugg="${esc(s.id)}">+ ${esc(label(s))} · ${s.weight} g</button>`).join('')}</div>`:''}
   </div>`;
@@ -1104,7 +1107,7 @@ document.addEventListener('click', e => {
   if (b.dataset.rename){ rename(b.dataset.rename); return; }
   if ('mat' in b.dataset){ state.mat = b.dataset.mat || null; render(); return; }
   if (b.dataset.qual){ state.qual = b.dataset.qual; render(); return; }
-  if (b.dataset.delorder){ delOrder(b.dataset.delorder); return; }
+  if (b.dataset.delorder){ const id=b.dataset.delorder; if (armedOrder===id){ armedOrder=null; clearTimeout(armedTimer); const r=state.reorder.get(id); stepLabel(r?`${r.name} von der Bestellliste entfernt`:null); delOrder(id); toast('Von der Bestellliste entfernt'); } else { armedOrder=id; clearTimeout(armedTimer); armedTimer=setTimeout(()=>{ armedOrder=null; render(); }, 3000); render(); requestAnimationFrame(()=>document.querySelector(`[data-delorder="${CSS.escape(id)}"]`)?.focus()); } return; }
   if (b.dataset.ordered){ const r=state.reorder.get(b.dataset.ordered); if(!r) return; stepLabel(`${r.qty||1}× ${r.name} als bestellt markiert`); for(let i=0;i<(+r.qty||1);i++) put({id:newId('f'),kind:'filament',name:r.name,material:r.material||'',color:r.color||'',hex:r.hex||hexOf(r.color),brand:r.brand||'',finish:r.finish||'',weight:1000,full:1000,quality:'gut',loc:'bestellt',pos:Date.now()+i,note:''}); delOrder(r.id); toast(`${r.qty||1}× unter «${locName('bestellt')}»`); return; }
   if (b.dataset.arrived){ stepLabel(`${inLoc('bestellt').length} Rollen eingetroffen → ${locName('neu')}`); inLoc('bestellt').forEach(s=>put({...s,loc:'neu'})); toast(`Verschoben nach «${locName('neu')}»`); return; }
   if (b.dataset.sugg){ const s=state.spools.get(b.dataset.sugg); if(!s) return; stepLabel(`${label(s)} auf die Bestellliste`); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); toast('Auf die Bestellliste gesetzt'); return; }
