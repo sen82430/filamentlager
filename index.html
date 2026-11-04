@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#2b3038">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="icon" type="image/png" href="printorix-icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -14,24 +14,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Printorix Filamentlager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: werkstatt-board — Kommode als echtes Möbel links, Drucker rechts, Bodenreihen + Bestellfluss darunter. Spulen als Draufsicht mit Füllring. */
+/* Layout: werkstatt-board im Printorix-Look — weisse Fläche, Navy-Kommode, blaue Akzente. Spulen als Draufsicht mit Füllring. */
 :root{
-  --bg:#e9ecef; --panel:#f8f9fa; --ink:#15181d; --muted:#5d6570; --line:#cfd4da;
-  --cab:#2b3038; --cab-edge:#1d2127; --drawer:#3a414b; --drawer-hi:#454d58; --drawer-ink:#e8ecf1; --drawer-muted:#9aa4b1;
-  --accent:#e8590c; --accent-ink:#fff; --track:#d5d9de; --track-on-cab:#262b32;
-  --low:#d6336c; --ok:#2f9e44; --warn:#f08c00;
-  --display:"Saira Condensed","Arial Narrow",sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --bg:#FFFFFF; --panel:#F5F7FA; --ink:#1F2937; --muted:#5B6573; --line:#E3E8EF;
+  --cab:#1E3A5F; --cab-edge:#152B47; --drawer:#264A73; --drawer-hi:#264A73; --drawer-ink:#FFFFFF; --drawer-muted:#A9C8EA;
+  --accent:#2563EB; --accent-ink:#FFFFFF; --accent-soft:#EAF2FD; --brand:#2B77C2; --brand-light:#99CFFF; --navy:#1E3A5F;
+  --track:#E3E8EF; --track-on-cab:#1A3554;
+  --low:#DC2626; --ok:#16A34A; --warn:#F59E0B;
+  --display:"Montserrat",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#121417; --panel:#1b1e23; --ink:#e7eaee; --muted:#98a1ac; --line:#2c3138;
-  --cab:#23272e; --cab-edge:#0b0d10; --drawer:#2e343c; --drawer-hi:#373e47; --drawer-ink:#e8ecf1; --drawer-muted:#8e98a5;
-  --accent:#ff7a2e; --accent-ink:#160a02; --track:#2c3138; --track-on-cab:#1a1e23; --low:#f06595; --ok:#51cf66; --warn:#fcc419; color-scheme:dark}}
+  --bg:#0F1722; --panel:#172231; --ink:#E6ECF3; --muted:#9AA7B6; --line:#26354A;
+  --cab:#13243A; --cab-edge:#0A1524; --drawer:#1C3350; --drawer-hi:#1C3350; --drawer-ink:#E6ECF3; --drawer-muted:#8FB3D9;
+  --accent:#4C8DF6; --accent-ink:#FFFFFF; --accent-soft:#1A2F4D; --navy:#99CFFF; --track:#26354A; --track-on-cab:#13243A; --low:#F87171; --ok:#4ADE80; --warn:#FBBF24; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#121417; --panel:#1b1e23; --ink:#e7eaee; --muted:#98a1ac; --line:#2c3138;
-  --cab:#23272e; --cab-edge:#0b0d10; --drawer:#2e343c; --drawer-hi:#373e47; --drawer-ink:#e8ecf1; --drawer-muted:#8e98a5;
-  --accent:#ff7a2e; --accent-ink:#160a02; --track:#2c3138; --track-on-cab:#1a1e23; --low:#f06595; --ok:#51cf66; --warn:#fcc419; color-scheme:dark}
+  --bg:#0F1722; --panel:#172231; --ink:#E6ECF3; --muted:#9AA7B6; --line:#26354A;
+  --cab:#13243A; --cab-edge:#0A1524; --drawer:#1C3350; --drawer-hi:#1C3350; --drawer-ink:#E6ECF3; --drawer-muted:#8FB3D9;
+  --accent:#4C8DF6; --accent-ink:#FFFFFF; --accent-soft:#1A2F4D; --navy:#99CFFF; --track:#26354A; --track-on-cab:#13243A; --low:#F87171; --ok:#4ADE80; --warn:#FBBF24; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -45,29 +46,34 @@ button{cursor:pointer}
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:14px 12px;border-bottom:1px solid var(--line);display:grid;gap:12px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--bg)}
 .brandrow{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;justify-content:space-between}
-h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.01em;line-height:1;margin:0;text-transform:uppercase;display:flex;align-items:center;gap:10px}
-h1 .mark{width:26px;height:26px;border-radius:50%;background:conic-gradient(var(--accent) 0 72%,var(--track) 0);display:grid;place-items:center}
-h1 .mark::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--bg)}
+h1{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:0;line-height:1;margin:0;color:var(--navy);display:flex;align-items:center;gap:12px}
+h1 .wordmark{height:24px;width:auto;display:block}
+h1 .sep{width:1px;height:22px;background:var(--line)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) h1 .wordmark{filter:brightness(0) invert(1) opacity(.9)}}
+:root[data-theme="dark"] h1 .wordmark{filter:brightness(0) invert(1) opacity(.9)}
 h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0}
+.brandright{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:flex-end}
 .stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
 .stat{display:grid;line-height:1.1}
-.stat b{font-family:var(--display);font-size:24px;font-weight:600}
-.stat span{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.stat b{font-family:var(--display);font-size:22px;font-weight:700;color:var(--navy)}
+.stat span{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .stat.low b{color:var(--low)}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .search{flex:1 1 260px;position:relative;min-width:0}
-.search input{width:100%;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--panel);padding:0 12px 0 36px}
+.search input{width:100%;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--bg);padding:0 12px 0 36px}
 .search svg{position:absolute;left:11px;top:11px;width:18px;height:18px;stroke:var(--muted)}
 .hit{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
 .hit b{color:var(--accent);font-weight:500}
-.btn{height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:hover{border-color:var(--muted)}
+.btn{height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary:hover{background:#1D4ED8;color:var(--accent-ink)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .btn.sm{height:30px;padding:0 10px;font-size:12.5px}
 .btn.danger{color:var(--low)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .chip i{font-style:normal;font-family:var(--mono);font-size:11px;opacity:.7}
 .matbar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--track)}
 .matbar span{display:block;height:100%}
@@ -77,21 +83,21 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 @media (max-width:980px){.board{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:1180px) and (min-width:981px){.slots.c6{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sect-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
-.sect-h h2{font-family:var(--display);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.12em;margin:0;color:var(--muted)}
+.sect-h h2{font-family:var(--display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin:0;color:var(--navy)}
 .sect-h .sum{font-family:var(--mono);font-size:12px;color:var(--muted)}
 
 /* Kommode */
-.cabinet{background:var(--cab);border-radius:10px;padding:12px;border-bottom:10px solid var(--cab-edge);box-shadow:0 18px 30px -18px rgba(0,0,0,.45);display:grid;gap:10px}
+.cabinet{background:var(--cab);border-radius:10px;padding:12px;border-bottom:10px solid var(--cab-edge);box-shadow:0 14px 28px -20px rgba(30,58,95,.55);display:grid;gap:10px}
 .crow{display:grid;gap:10px}
 .crow.top{grid-template-columns:repeat(4,minmax(0,1fr))}
 .crow.half{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:640px){.crow.top{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:420px){.crow.half{grid-template-columns:minmax(0,1fr)}}
-.drawer{background:linear-gradient(var(--drawer-hi),var(--drawer));border-radius:6px;padding:20px 10px 10px;position:relative;color:var(--drawer-ink);min-height:120px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s}
+.drawer{background:var(--drawer);border-radius:6px;padding:20px 10px 10px;position:relative;color:var(--drawer-ink);min-height:120px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s}
 .drawer::before{content:"";position:absolute;top:7px;left:50%;translate:-50% 0;width:34%;max-width:90px;height:5px;border-radius:3px;background:var(--cab-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 .drawer .lh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:2px 6px;font-size:11.5px}
 .lh .nm,.lh .meta{white-space:nowrap}
-.drawer .lh .nm{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.drawer .lh .nm{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.02em}
 .drawer .lh .meta{font-family:var(--mono);font-size:11px;color:var(--drawer-muted)}
 .drop-on{box-shadow:0 0 0 2px var(--accent) inset}
 .loc{border-radius:8px}
@@ -115,6 +121,7 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .spool .t{font-size:10.5px;line-height:1.15;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .spool .w{font-family:var(--mono);font-size:10px;opacity:.75;font-variant-numeric:tabular-nums}
 .spool.low .w{color:var(--low);opacity:1;font-weight:500}
+.drawer .spool.low .w{color:#FCA5A5}
 .badge{position:absolute;top:-2px;right:calc(50% - 30px);font-family:var(--mono);font-size:9px;font-weight:500;line-height:1;padding:3px 4px;border-radius:4px;background:var(--warn);color:#111}
 .spool.dim{opacity:.13}
 .spool.match .disc{box-shadow:0 0 0 2px var(--accent)}
@@ -129,7 +136,7 @@ button.ztag{cursor:pointer}
 /* Panels (hell) */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
 .panel .lh{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.panel .lh .nm{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.05em;text-transform:uppercase}
+.panel .lh .nm{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.01em;color:var(--navy)}
 .panel .lh .meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .stack{display:grid;gap:10px}
 .slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;min-width:0}
@@ -150,7 +157,7 @@ button.ztag{cursor:pointer}
 .floor{display:grid;gap:10px}
 .floor .panel .spools{grid-template-columns:repeat(auto-fill,minmax(58px,1fr))}
 .floor-row{position:relative}
-.floor-row .panel{background:repeating-linear-gradient(135deg,var(--panel) 0 10px,color-mix(in srgb,var(--panel) 92%,var(--ink)) 10px 11px)}
+.floor-row .panel{border-left:4px solid var(--brand-light)}
 
 /* Bestellen */
 .order-list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
@@ -171,8 +178,8 @@ button.ztag{cursor:pointer}
 
 /* Editor */
 .scrim{position:fixed;inset:0;background:rgba(10,12,15,.45);z-index:50;display:flex;justify-content:flex-end}
-.sheet{background:var(--panel);width:min(430px,100%);height:100%;overflow:auto;padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px;display:grid;gap:14px;align-content:start;box-shadow:-20px 0 40px -20px rgba(0,0,0,.4)}
-.sheet h3{font-family:var(--display);font-size:22px;font-weight:700;text-transform:uppercase;margin:0;display:flex;align-items:center;gap:12px}
+.sheet{background:var(--bg);width:min(430px,100%);height:100%;overflow:auto;padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px;display:grid;gap:14px;align-content:start;box-shadow:-20px 0 40px -20px rgba(0,0,0,.4)}
+.sheet h3{font-family:var(--display);font-size:20px;font-weight:700;color:var(--navy);margin:0;display:flex;align-items:center;gap:12px}
 .field{display:grid;gap:5px}
 .field label,.lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
 .field input,.field select,.field textarea{height:38px;border-radius:7px;border:1px solid var(--line);background:var(--bg);padding:0 10px;width:100%;min-width:0}
@@ -184,17 +191,20 @@ button.ztag{cursor:pointer}
 .palette input[type=color]{width:24px;height:24px;border:0;padding:0;background:none;border-radius:50%}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border:0;background:transparent;padding:7px 14px;font-weight:500}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .weight-big{display:flex;align-items:center;gap:14px}
 .weight-big .disc{width:76px;height:76px}.weight-big .disc .fill{width:58px;height:58px}.weight-big .disc .fill::after{width:18px;height:18px}
 .quick{display:flex;flex-wrap:wrap;gap:5px}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .sheet .actions{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:14px}
 .confirm{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));translate:-50% 0;background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));translate:-50% 0;background:#1F2937;border:1px solid rgba(153,207,255,.35);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:60;box-shadow:0 8px 24px rgba(15,23,34,.3);display:flex;align-items:center;gap:12px;max-width:calc(100vw - 32px)}
+.toast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast button{border:0;background:transparent;color:var(--brand-light);font-weight:600;padding:0;white-space:nowrap}
 
 /* Treffer-Liste & Handy-Bedienelemente (Desktop: aus) */
-#results,.tabs,.fab,#moreBtn{display:none}
+#results,.tabs,.fab{display:none}
+.brandrow .stats{margin-left:auto}
 .wrap>*,header.top>*,.brandrow>*,.toolbar>*{min-width:0}
 h1{flex-wrap:wrap}
 .results{list-style:none;margin:0;padding:0;display:grid;gap:6px}
@@ -208,21 +218,25 @@ h1{flex-wrap:wrap}
 @media (max-width:760px){
   body{padding-block:0 calc(96px + env(safe-area-inset-bottom,0px))}
   header.top{position:static;border-bottom:0;padding-block:12px 4px;gap:10px}
-  .brandrow{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .brandrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
   .brandrow>*{width:100%;max-width:100%}
-  h1 small{margin-left:auto}
-  h1{font-size:24px}
+  .brandrow>.menu{width:auto;grid-column:2;grid-row:1}
+  .brandrow>h1{grid-column:1;grid-row:1}
+  .brandrow>.stats{grid-column:1/-1;grid-row:2;margin-left:0}
+  h1 .wordmark{height:17px}h1 .sep{height:18px}
+  h1{font-size:18px;gap:9px}
+  h1 small{flex-basis:100%}
   .stats{flex-wrap:nowrap;overflow-x:auto;gap:8px;scrollbar-width:none}
   .stats::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
   .stat{flex:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
   .stat b{font-size:20px}
   .toolbar{gap:8px}
-  .search{flex:1 1 0}
+  .search{flex:1 1 100%}
   .search input{height:46px;font-size:16px;border-radius:12px}
   .search svg{top:14px}
-  #moreBtn{display:inline-flex;height:46px;border-radius:12px}
-  #addBtn,.extra{display:none}
-  .toolbar.open .extra{display:inline-flex;flex:1 1 calc(33% - 8px);justify-content:center}
+  #addBtn{display:none}
+  #addZub{height:44px;border-radius:12px;flex:1 1 auto;justify-content:center}
+  .hist{height:44px;border-radius:12px}.hist button{width:52px}
   .hit{order:9;flex-basis:100%}
   .hit:empty{display:none}
   .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-right:16px}
@@ -267,12 +281,31 @@ h1{flex-wrap:wrap}
   .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Rückgängig / Wiederholen */
+.hist{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;height:40px;flex:none}
+.hist button{width:40px;border:0;background:var(--bg);display:grid;place-items:center;color:var(--ink)}
+.hist button+button{border-left:1px solid var(--line)}
+.hist button:hover:not(:disabled){color:var(--accent);background:var(--accent-soft)}
+.hist button:disabled{opacity:.3;cursor:default}
+.hist svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Menü hinter dem Printorix-Icon */
+.menu{position:relative;flex:none}
+.menuBtn{width:44px;height:44px;border-radius:50%;padding:0;border:1px solid var(--line);background:#fff;display:grid;place-items:center;overflow:hidden;transition:box-shadow .15s}
+.menuBtn img{width:100%;height:100%;display:block}
+.menuBtn:hover,.menuBtn[aria-expanded="true"]{box-shadow:0 0 0 3px var(--brand-light)}
+.menuPop{position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:230px;background:var(--bg);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px -12px rgba(15,23,34,.35);padding:6px;display:grid}
+.menuPop .who{padding:8px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menuPop button{height:40px;border:0;background:transparent;border-radius:8px;text-align:left;padding:0 10px;display:flex;align-items:center;gap:10px;font-weight:500}
+.menuPop button:hover{background:var(--accent-soft);color:var(--accent)}
+.menuPop button.danger{color:var(--low)}
+.menuPop svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 /* Login */
 .gate{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:24px}
 .gate-card{width:min(380px,100%);display:grid;gap:16px;justify-items:start}
-.gate-card h1{font-size:40px}
+.gate-card h1{font-size:26px}
+.gate-card .gateLogo{width:84px;height:84px;border-radius:50%}
 .gate-card p{margin:0;color:var(--muted)}
-.gbtn{height:46px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;display:inline-flex;align-items:center;gap:10px}
+.gbtn{height:46px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:600;display:inline-flex;align-items:center;gap:10px}
 .gbtn svg{width:18px;height:18px}
 .gate .err{color:var(--low);font-size:13px}
 .who{font-family:var(--mono);font-size:11px;color:var(--muted)}
@@ -283,8 +316,18 @@ h1{flex-wrap:wrap}
 <div class="wrap">
   <header class="top">
     <div class="brandrow">
-      <h1><span class="mark" aria-hidden="true"></span>Filamentlager <small id="sync">verbinde…</small></h1>
+      <h1><img class="wordmark" src="printorix-schriftzug.png" alt="Printorix"><span class="sep" aria-hidden="true"></span>Filamentlager <small id="sync">verbinde…</small></h1>
       <div class="stats" id="stats"></div>
+      <div class="menu" id="menu">
+        <button class="menuBtn" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="menuPop" title="Menü"><img src="printorix-icon.png" alt="Menü"></button>
+        <div class="menuPop" id="menuPop" role="menu" hidden>
+          <div class="who" id="who">nicht angemeldet</div>
+          <button role="menuitem" id="backupBtn" title="Kompletter Bestand als JSON sichern"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Backup herunterladen</button>
+          <button role="menuitem" id="importBtn" title="JSON-Backup oder Startbestand einlesen"><svg viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M4 20h16"/></svg>Import</button>
+          <button role="menuitem" class="danger" id="logoutBtn"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Abmelden</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
     </div>
     <div class="toolbar" id="toolbar">
       <div class="search">
@@ -292,14 +335,12 @@ h1{flex-wrap:wrap}
         <input id="q" type="search" placeholder="Suchen: z. B. pctg schwarz, extrudr, gold…" autocomplete="off" aria-label="Filament suchen">
       </div>
       <span class="hit" id="hit"></span>
-      <button class="btn" id="moreBtn" aria-expanded="false" aria-controls="toolbar">Mehr</button>
+      <div class="hist" role="group" aria-label="Verlauf">
+        <button id="undoBtn" disabled aria-label="Rückgängig" title="Nichts zum Rückgängigmachen"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+        <button id="redoBtn" disabled aria-label="Wiederholen" title="Nichts zum Wiederholen"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+      </div>
       <button class="btn primary" id="addBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Rolle</button>
-      <button class="btn extra" id="addZub">+ Zubehör</button>
-      <button class="btn extra" id="csvBtn">CSV</button>
-      <button class="btn extra" id="backupBtn" title="Kompletter Bestand als JSON sichern">Backup</button>
-      <button class="btn extra" id="importBtn" title="JSON-Backup oder Startbestand einlesen">Import</button>
-      <input type="file" id="importFile" accept=".json,application/json" hidden>
-      <button class="btn extra" id="logoutBtn" title="Abmelden">Abmelden</button>
+      <button class="btn" id="addZub"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Zubehör</button>
     </div>
     <div class="chips" id="chips"></div>
     <div class="matbar" id="matbar" aria-hidden="true"></div>
@@ -334,7 +375,8 @@ h1{flex-wrap:wrap}
 
 <div class="gate" id="gate">
   <div class="gate-card">
-    <h1><span class="mark" aria-hidden="true"></span>Filamentlager</h1>
+    <img class="gateLogo" src="printorix-icon.png" alt="Printorix">
+    <h1>Filamentlager</h1>
     <p>Privates Lager. Bitte mit dem freigegebenen Google-Konto anmelden.</p>
     <button class="gbtn" id="loginBtn"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Mit Google anmelden</button>
     <div class="err" id="gateErr"></div>
@@ -401,7 +443,7 @@ function pct(s){ const full = +s.full || 1000; return Math.max(0, Math.min(1, (+
 function discHtml(s, onCab){
   const p = Math.round(pct(s)*100);
   const track = onCab ? 'var(--track-on-cab)' : 'var(--track)';
-  const ring = s.weight <= LOW ? 'var(--low)' : 'var(--accent)';
+  const ring = s.weight <= LOW ? (onCab ? '#F87171' : 'var(--low)') : (onCab ? 'var(--brand-light)' : 'var(--accent)');
   return `<span class="disc" style="background:conic-gradient(${ring} ${p}%, ${track} 0)"><span class="fill" style="background:${fillCss(s)};--hub:${onCab?'var(--drawer)':'var(--panel)'}"></span></span>`;
 }
 function label(s){ return [s.material, s.color].filter(Boolean).join(' ') || s.name || 'Rolle'; }
@@ -450,7 +492,7 @@ function slotGrid(l, onCab){
 }
 function zubRow(l){
   const z = inLoc(l.id).filter(s=>s.kind==='zubehoer');
-  return `<div class="zub">${z.map(zubHtml).join('')}<button class="ztag addz" data-addz="${l.id}" aria-label="Zubehör in ${esc(locName(l.id))} hinzufügen">+ Zubehör</button></div>`;
+  return `<div class="zub">${z.map(zubHtml).join('')}</div>`;
 }
 function drawer(l){
   const items = inLoc(l.id); const f = fil(items);
@@ -542,10 +584,85 @@ function render(){
 }
 
 // --- DB
-async function put(s){ if(!db) return toast('Keine Verbindung zum Speicher'); const {id,...body}=s; state.spools.set(id,{id,...body}); render(); try{ await db.collection('spools').doc(id).set(body);}catch(e){ toast('Speichern fehlgeschlagen: '+(e.message||e.code)); } }
-async function del(id){ if(!db) return; state.spools.delete(id); render(); try{ await db.collection('spools').doc(id).delete(); }catch(e){ toast('Löschen fehlgeschlagen'); } }
-async function putOrder(r){ if(!db) return; const {id,...body}=r; state.reorder.set(id,r); render(); try{ await db.collection('reorder').doc(id).set(body);}catch(e){ toast('Speichern fehlgeschlagen'); } }
-async function delOrder(id){ if(!db) return; state.reorder.delete(id); render(); try{ await db.collection('reorder').doc(id).delete(); }catch(e){} }
+async function put(s){ if(!db) return toast('Keine Verbindung zum Speicher'); const {id,...body}=s; rec('spools',id,state.spools.get(id),{id,...body}); state.spools.set(id,{id,...body}); render(); try{ await db.collection('spools').doc(id).set(body);}catch(e){ toast('Speichern fehlgeschlagen: '+(e.message||e.code)); } }
+async function del(id){ if(!db) return; rec('spools',id,state.spools.get(id),null); state.spools.delete(id); render(); try{ await db.collection('spools').doc(id).delete(); }catch(e){ toast('Löschen fehlgeschlagen'); } }
+async function putOrder(r){ if(!db) return; const {id,...body}=r; rec('reorder',id,state.reorder.get(id),{id,...body}); state.reorder.set(id,r); render(); try{ await db.collection('reorder').doc(id).set(body);}catch(e){ toast('Speichern fehlgeschlagen'); } }
+async function delOrder(id){ if(!db) return; rec('reorder',id,state.reorder.get(id),null); state.reorder.delete(id); render(); try{ await db.collection('reorder').doc(id).delete(); }catch(e){} }
+
+// --- Verlauf: die letzten 2 Schritte rückgängig / wiederholen (gilt für diese Sitzung)
+const HIST_MAX = 2;
+const hist = {undo:[], redo:[], cur:null};
+const clone = v => v==null ? null : JSON.parse(JSON.stringify(v));
+const stable = v => JSON.stringify(v, (k,x) => x && typeof x==='object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map(n=>[n,x[n]])) : x);
+function curStep(){ if (!hist.cur){ hist.cur = {ops:new Map(), label:null, focus:null}; setTimeout(commitStep,0); } return hist.cur; }
+function rec(col, id, before, after){
+  const c = curStep(), k = col+'|'+id, o = c.ops.get(k);
+  if (o) o.after = clone(after); else c.ops.set(k, {col, id, before:clone(before), after:clone(after)});
+}
+// Beschriftung für den nächsten Schritt (optional): Text und/oder die Rolle, um die es geht
+function stepLabel(label, focus){ const c = curStep(); if (label) c.label = label; if (focus) c.focus = focus; }
+function commitStep(){
+  const c = hist.cur; hist.cur = null; if (!c) return;
+  const ops = [...c.ops.values()].filter(o => stable(o.before) !== stable(o.after));
+  if (!ops.length) return;
+  hist.undo.push({ops, label: c.label || describe(ops, c.focus)});
+  while (hist.undo.length > HIST_MAX) hist.undo.shift();
+  hist.redo = []; updHist();
+}
+const nameOf = s => s.kind==='zubehoer' ? (s.name||'Zubehör') : label(s);
+function describeOne(o){
+  const b=o.before, a=o.after, s=a||b;
+  if (o.col==='reorder') return !b ? `${s.name} auf die Bestellliste` : !a ? `${s.name} von der Bestellliste entfernt` : `${s.name} (Bestellliste) geändert`;
+  if (o.col==='meta') return o.id==='printers' ? 'Geräte geändert' : o.id==='drawers' ? 'Schubladen geändert' : 'Umbenannt';
+  const n = nameOf(s);
+  if (!b) return `${n} hinzugefügt (${locName(a.loc)})`;
+  if (!a) return `${n} gelöscht`;
+  if (b.loc!==a.loc) return `${n}: ${locName(b.loc)} → ${locName(a.loc)}${+a.slot && slotted(a.loc) ? ' · Slot '+a.slot : ''}`;
+  if (+b.weight!==+a.weight) return `${n}: ${b.weight} g → ${a.weight} g`;
+  if ((+b.slot||0)!==(+a.slot||0)) return `${n}: Slot ${+b.slot||'–'} → Slot ${+a.slot}`;
+  if ((b.quality||'gut')!==(a.quality||'gut')) return `${n}: Qualität ${b.quality||'gut'} → ${a.quality||'gut'}`;
+  if (+b.full!==+a.full) return `${n}: Rollengrösse ${b.full} g → ${a.full} g`;
+  if ((b.pos??0)!==(a.pos??0)) return `${n}: Reihenfolge in ${locName(a.loc)}`;
+  return `${n} bearbeitet`;
+}
+function describe(ops, focus){
+  const main = (focus && ops.find(o=>o.id===focus)) || ops.find(o=>o.col==='spools' && (!o.before || !o.after || o.before.loc!==o.after.loc)) || ops[0];
+  const rest = ops.filter(o=>o!==main);
+  if (!rest.length) return describeOne(main);
+  const swapped = rest.filter(o=>o.col==='spools' && o.before && o.after && o.before.loc===o.after.loc && (+o.before.slot||0)!==(+o.after.slot||0));
+  if (swapped.length===1 && rest.length===1) return describeOne(main) + ` (getauscht mit ${nameOf(swapped[0].after)})`;
+  return describeOne(main) + ` (+${rest.length} weitere)`;
+}
+function applyVal(col, id, v){
+  const write = async () => {
+    if (col==='spools' || col==='reorder'){ const ref = db.collection(col).doc(id); if (v){ const {id:_,...body} = v; await ref.set(body); } else await ref.delete(); }
+    else if (id==='printers') await db.doc('meta/printers').set({list:v});
+    else if (id==='drawers') await db.doc('meta/drawers').set({list:v});
+    else if (id==='names') await db.doc('meta/names').set(v||{});
+  };
+  if (col==='spools' || col==='reorder'){ const m = col==='spools' ? state.spools : state.reorder; if (v) m.set(id, clone(v)); else m.delete(id); }
+  else if (id==='printers') state.printers = clone(v);
+  else if (id==='drawers'){ state.drawers = clone(v); state.drawersStored = true; }
+  else if (id==='names') state.names = clone(v)||{};
+  write().catch(e => toast('Speichern fehlgeschlagen: '+(e.code||e.message)));
+}
+function travel(dir){
+  if (!db) return;
+  if (hist.cur) commitStep();
+  const from = dir<0 ? hist.undo : hist.redo, to = dir<0 ? hist.redo : hist.undo;
+  const step = from.pop(); if (!step) return;
+  step.ops.forEach(o => applyVal(o.col, o.id, dir<0 ? o.before : o.after));
+  to.push(step); while (to.length > HIST_MAX) to.shift();
+  render(); updHist();
+  toast((dir<0 ? 'Rückgängig: ' : 'Wiederholt: ') + step.label, {label: dir<0 ? 'Wiederholen' : 'Rückgängig', fn: () => travel(-dir)});
+}
+function updHist(){
+  const u = hist.undo[hist.undo.length-1], r = hist.redo[hist.redo.length-1];
+  const ub = $('#undoBtn'), rb = $('#redoBtn');
+  ub.disabled = !u; rb.disabled = !r;
+  ub.title = u ? 'Rückgängig: '+u.label : 'Nichts zum Rückgängigmachen'; ub.setAttribute('aria-label', ub.title);
+  rb.title = r ? 'Wiederholen: '+r.label : 'Nichts zum Wiederholen'; rb.setAttribute('aria-label', rb.title);
+}
 
 /* === Firebase: HIER deine Werte aus der Firebase-Konsole einsetzen === */
 const FIREBASE_CONFIG = {
@@ -589,8 +706,8 @@ function connect(){
   $('#logoutBtn').addEventListener('click', () => auth.signOut());
   auth.onAuthStateChanged(user => {
     unsubs.forEach(u=>u()); unsubs=[]; state.spools=new Map(); state.reorder=new Map(); state.names={}; state.loaded=false;
-    if (!user){ db=null; $('#gate').hidden=false; render(); return; }
-    $('#gate').hidden=true; $('#gateErr').textContent=''; db=fs; $('#sync').textContent='verbinde…'; $('#logoutBtn').title='Abmelden ('+user.email+')'; render();
+    if (!user){ db=null; $('#who').textContent='nicht angemeldet'; hist.undo=[]; hist.redo=[]; updHist(); $('#gate').hidden=false; render(); return; }
+    $('#gate').hidden=true; $('#gateErr').textContent=''; db=fs; $('#sync').textContent='verbinde…'; $('#who').textContent=user.email; render();
     const timer = setTimeout(()=>{ if(!state.loaded) $('#status').innerHTML='<div class="banner err">Der Speicher antwortet noch nicht – Daten erscheinen, sobald die Verbindung steht.</div>'; },10000);
     const err = e => {
       clearTimeout(timer);
@@ -686,9 +803,9 @@ function openSheet(s){
     if (b.dataset.q){ editing.quality=b.dataset.q; sh.querySelectorAll('#fQual button').forEach(x=>x.setAttribute('aria-pressed',x===b)); }
     if (b.dataset.c){ $('#fCol').value=b.dataset.c; editing.color=b.dataset.c; editing.hex=b.dataset.h; sync(); }
     if (b.id==='cancel') close();
-    if (b.id==='posL' || b.id==='posR'){ movePos(editing.id, b.id==='posL'?-1:1); editing.pos = state.spools.get(editing.id).pos; sync(); }
-    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now(),slot:0}; put(c); toast('Dupliziert'); close(); }
-    if (b.id==='used'){ const s=state.spools.get(editing.id); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); del(s.id); toast('Rolle entfernt und auf «Zu bestellen» gesetzt'); close(); }
+    if (b.id==='posL' || b.id==='posR'){ stepLabel(`${label(editing)}: Reihenfolge geändert`, editing.id); movePos(editing.id, b.id==='posL'?-1:1); editing.pos = state.spools.get(editing.id).pos; sync(); }
+    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now(),slot:0}; stepLabel(`${label(c)} dupliziert`); put(c); toast('Dupliziert'); close(); }
+    if (b.id==='used'){ const s=state.spools.get(editing.id); stepLabel(`${label(s)} aufgebraucht → Bestellliste`); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); del(s.id); toast('Rolle entfernt und auf «Zu bestellen» gesetzt'); close(); }
     if (b.id==='delBtn'){ $('#confirmHost').innerHTML = `<div class="confirm">Wirklich löschen? <button type="button" class="btn sm danger" id="yesDel">Ja, löschen</button><button type="button" class="btn sm" id="noDel">Nein</button></div>`; }
     if (b.id==='yesDel'){ del(editing.id); toast('Gelöscht'); close(); }
     if (b.id==='noDel'){ $('#confirmHost').innerHTML=''; }
@@ -697,6 +814,7 @@ function openSheet(s){
     e.preventDefault();
     if (isZ){ editing.name=$('#fName').value.trim(); editing.qty=$('#fQty').value.trim(); editing.loc=$('#fLoc').value; if(!editing.name) return; }
     else { sync(); editing.name = [editing.material,editing.color,editing.finish,editing.brand].filter(Boolean).join(' ').toUpperCase(); editing.quality = editing.quality||'gut'; }
+    stepLabel(isNew ? `${nameOf(editing)} hinzugefügt (${locName(editing.loc)})` : null, editing.id);
     const sp = !isZ && slotted(editing.loc); const slotNo = sp ? +$('#fSlot').value : 0; const orig = state.spools.get(editing.id);
     if (orig && orig.loc!==editing.loc) editing.slot = 0;
     if (sp && slotNo){ put({...editing, slot: orig && orig.loc===editing.loc ? orig.slot||0 : 0}); setSlot(editing.id, editing.loc, slotNo); }
@@ -712,11 +830,13 @@ const blank = loc => ({id:newId('f'),kind:'filament',name:'',material:'PLA',colo
 
 // --- Drucker / Trockner verwalten
 async function saveDrawers(list){
+  rec('meta','drawers', state.drawers.map(x=>({...x, name: locName(x.id)})), list);
   state.drawers = list.map(d=>({...d})); state.drawersStored = true; render();
   if (!db) return;
   try { await db.doc('meta/drawers').set({list:state.drawers}); } catch(e){ toast('Speichern fehlgeschlagen: '+(e.code||e.message)); }
 }
 async function savePrinters(list){
+  rec('meta','printers', state.printers, list);
   state.printers = list.map(p=>({...p})); render();
   if (!db) return;
   try { await db.doc('meta/printers').set({list:state.printers}); } catch(e){ toast('Speichern fehlgeschlagen: '+(e.code||e.message)); }
@@ -747,11 +867,11 @@ function openDevice(id){
     const b = e.target.closest('button'); if(!b) return;
     if (b.dataset.slots!==undefined){ $('#dSlots').value = b.dataset.slots; }
     if (b.id==='cancel') close();
-    if (b.id==='dUp' || b.id==='dDown'){ const l=state.printers.map(x=>({...x})); const j=idx+(b.id==='dUp'?-1:1); [l[idx],l[j]]=[l[j],l[idx]]; savePrinters(l); close(); }
+    if (b.id==='dUp' || b.id==='dDown'){ stepLabel(`Gerät «${p.name}» verschoben`); const l=state.printers.map(x=>({...x})); const j=idx+(b.id==='dUp'?-1:1); [l[idx],l[j]]=[l[j],l[idx]]; savePrinters(l); close(); }
     if (b.id==='dDel'){ $('#confirmHost').innerHTML = `<div class="confirm">«${esc(p.name)}» löschen?${n?` Die ${n} Rolle${n>1?'n':''} darauf ${n>1?'gehen':'geht'} nach «${esc(locName('neu'))}».`:''} <button type="button" class="btn sm danger" id="dYes">Ja, löschen</button><button type="button" class="btn sm" id="dNo">Nein</button></div>`; }
     if (b.id==='dNo') $('#confirmHost').innerHTML='';
     if (b.id==='dYes'){
-      const moved = inLoc(p.id); moved.forEach((s,i)=>put({...s, loc:'neu', pos:Date.now()+i}));
+      stepLabel(`Gerät «${p.name}» gelöscht`); const moved = inLoc(p.id); moved.forEach((s,i)=>put({...s, loc:'neu', pos:Date.now()+i}));
       savePrinters(state.printers.filter(x=>x.id!==p.id));
       toast(moved.length ? `Gelöscht – ${moved.length} nach «${locName('neu')}» verschoben` : 'Gerät gelöscht'); close();
     }
@@ -762,7 +882,7 @@ function openDevice(id){
     const slots = Math.max(0, Math.min(24, Math.round(+$('#dSlots').value||0)));
     const l = state.printers.map(x=>({...x}));
     if (isNew) l.push({id:p.id, name, slots}); else l[idx] = {...l[idx], name, slots};
-    savePrinters(l); toast(isNew?'Gerät hinzugefügt':'Gespeichert'); close();
+    stepLabel(isNew ? `Gerät «${name}» hinzugefügt` : `Gerät «${name}» geändert`); savePrinters(l); toast(isNew?'Gerät hinzugefügt':'Gespeichert'); close();
   });
   $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
   if (!matchMedia('(max-width:760px)').matches) $('#dName').focus();
@@ -785,7 +905,7 @@ function openDrawer(d){
     e.preventDefault();
     const name = $('#dName').value.trim(); if(!name) return $('#dName').focus();
     const slots = Math.max(0, Math.min(48, Math.round(+$('#dSlots').value||0)));
-    saveDrawers(state.drawers.map(x => x.id===d.id ? {...x, name, slots} : {...x, name: locName(x.id)}));
+    stepLabel(`Schublade «${name}» geändert`); saveDrawers(state.drawers.map(x => x.id===d.id ? {...x, name, slots} : {...x, name: locName(x.id)}));
     toast(n>slots && slots ? `Gespeichert – ${n-slots} Rolle${n-slots>1?'n':''} über der Slot-Anzahl` : 'Gespeichert'); close();
   });
   $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
@@ -797,7 +917,7 @@ function rename(id){
   const host = document.querySelector(`[data-loc="${id}"] .nm`); if(!host) return;
   host.innerHTML = `<input id="rn" value="${esc(locName(id))}" style="width:100%;font:inherit;background:transparent;border:1px solid var(--accent);border-radius:4px;padding:0 4px;color:inherit">`;
   const inp = $('#rn'); inp.focus(); inp.select();
-  const done = async ok => { if(!inp.isConnected) return; const v=inp.value.trim(); inp.remove(); if(ok && v && db){ state.names={...state.names,[id]:v}; render(); try{ await db.doc('meta/names').set(state.names);}catch(e){toast('Umbenennen fehlgeschlagen');} } else render(); };
+  const done = async ok => { if(!inp.isConnected) return; const v=inp.value.trim(); inp.remove(); if(ok && v && db && v!==locName(id)){ stepLabel(`Umbenannt: ${locName(id)} → ${v}`); rec('meta','names',state.names,{...state.names,[id]:v}); state.names={...state.names,[id]:v}; render(); try{ await db.doc('meta/names').set(state.names);}catch(e){toast('Umbenennen fehlgeschlagen');} } else render(); };
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter') done(true); if(e.key==='Escape') done(false); });
   inp.addEventListener('blur', ()=>done(true));
 }
@@ -806,7 +926,7 @@ function rename(id){
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b || b.closest('#sheet')) return;
   if (b.dataset.id){ const s=state.spools.get(b.dataset.id); if(s) openSheet(s); return; }
-  if (b.dataset.mv){ const l=state.printers.map(x=>({...x})); const i=l.findIndex(x=>x.id===b.dataset.mv), j=i+(+b.dataset.dir); if(i<0||j<0||j>=l.length) return; [l[i],l[j]]=[l[j],l[i]]; savePrinters(l); requestAnimationFrame(()=>{ const el=document.querySelector(`[data-loc="${l[j].id}"]`); if(el){ el.scrollIntoView({block:'nearest'}); const btn=el.querySelector(`[data-mv][data-dir="${b.dataset.dir}"]`); (btn && !btn.disabled ? btn : el.querySelector('[data-dev]'))?.focus(); } }); return; }
+  if (b.dataset.mv){ const l=state.printers.map(x=>({...x})); const i=l.findIndex(x=>x.id===b.dataset.mv), j=i+(+b.dataset.dir); if(i<0||j<0||j>=l.length) return; stepLabel(`Gerät «${l[i].name}» verschoben`); [l[i],l[j]]=[l[j],l[i]]; savePrinters(l); requestAnimationFrame(()=>{ const el=document.querySelector(`[data-loc="${l[j].id}"]`); if(el){ el.scrollIntoView({block:'nearest'}); const btn=el.querySelector(`[data-mv][data-dir="${b.dataset.dir}"]`); (btn && !btn.disabled ? btn : el.querySelector('[data-dev]'))?.focus(); } }); return; }
   if (b.dataset.addz){ openSheet({id:newId('z'),kind:'zubehoer',name:'',qty:'',loc:b.dataset.addz,pos:Date.now()}); return; }
   if (b.dataset.dev){ openDevice(b.dataset.dev); return; }
   if (b.id==='addDev'){ openDevice(null); return; }
@@ -815,9 +935,9 @@ document.addEventListener('click', e => {
   if ('mat' in b.dataset){ state.mat = b.dataset.mat || null; render(); return; }
   if (b.dataset.qual){ state.qual = b.dataset.qual; render(); return; }
   if (b.dataset.delorder){ delOrder(b.dataset.delorder); return; }
-  if (b.dataset.ordered){ const r=state.reorder.get(b.dataset.ordered); if(!r) return; for(let i=0;i<(+r.qty||1);i++) put({id:newId('f'),kind:'filament',name:r.name,material:r.material||'',color:r.color||'',hex:r.hex||hexOf(r.color),brand:r.brand||'',finish:r.finish||'',weight:1000,full:1000,quality:'gut',loc:'bestellt',pos:Date.now()+i,note:''}); delOrder(r.id); toast(`${r.qty||1}× unter «${locName('bestellt')}»`); return; }
-  if (b.dataset.arrived){ inLoc('bestellt').forEach(s=>put({...s,loc:'neu'})); toast(`Verschoben nach «${locName('neu')}»`); return; }
-  if (b.dataset.sugg){ const s=state.spools.get(b.dataset.sugg); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); toast('Auf die Bestellliste gesetzt'); return; }
+  if (b.dataset.ordered){ const r=state.reorder.get(b.dataset.ordered); if(!r) return; stepLabel(`${r.qty||1}× ${r.name} als bestellt markiert`); for(let i=0;i<(+r.qty||1);i++) put({id:newId('f'),kind:'filament',name:r.name,material:r.material||'',color:r.color||'',hex:r.hex||hexOf(r.color),brand:r.brand||'',finish:r.finish||'',weight:1000,full:1000,quality:'gut',loc:'bestellt',pos:Date.now()+i,note:''}); delOrder(r.id); toast(`${r.qty||1}× unter «${locName('bestellt')}»`); return; }
+  if (b.dataset.arrived){ stepLabel(`${inLoc('bestellt').length} Rollen eingetroffen → ${locName('neu')}`); inLoc('bestellt').forEach(s=>put({...s,loc:'neu'})); toast(`Verschoben nach «${locName('neu')}»`); return; }
+  if (b.dataset.sugg){ const s=state.spools.get(b.dataset.sugg); if(!s) return; stepLabel(`${label(s)} auf die Bestellliste`); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); toast('Auf die Bestellliste gesetzt'); return; }
 });
 document.addEventListener('submit', e => {
   if (e.target.id!=='orderForm') return; e.preventDefault();
@@ -827,12 +947,6 @@ document.addEventListener('submit', e => {
 $('#q').addEventListener('input', e => { state.q = e.target.value; render(); });
 $('#addBtn').addEventListener('click', () => openSheet(blank('neu')));
 $('#addZub').addEventListener('click', () => openSheet({id:newId('z'),kind:'zubehoer',name:'',qty:'',loc:'s8',pos:Date.now()}));
-$('#csvBtn').addEventListener('click', async () => {
-  const rows = [['Ort','Typ','Material','Farbe','Finish','Marke','Restgewicht g','Rollengrösse g','Qualität','Bezeichnung','Notiz']];
-  locs().forEach(l => inLoc(l.id).forEach(s => rows.push([locName(l.id), s.kind==='zubehoer'?'Zubehör':'Filament', s.material||'', s.color||'', s.finish||'', s.brand||'', s.kind==='zubehoer'?'':s.weight, s.kind==='zubehoer'?'':(s.full||1000), s.quality||'', s.kind==='zubehoer'?(s.name+' '+(s.qty||'')).trim():s.name, (s.note||'').replace(/\n/g,' ')])));
-  const csv = '﻿' + rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  saveFile(`Lagerbestand_Filament_${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv;charset=utf-8');
-});
 $('#backupBtn').addEventListener('click', () => {
   const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names, printers:state.printers, drawers:state.drawers};
   saveFile(`filamentlager-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(out,null,1), 'application/json');
@@ -864,6 +978,7 @@ $('#importFile').addEventListener('change', async e => {
     if (data.names && Object.keys(data.names).length) await db.doc('meta/names').set(data.names);
     if (Array.isArray(data.printers) && data.printers.length) await db.doc('meta/printers').set({list:data.printers});
     if (Array.isArray(data.drawers) && data.drawers.length) await db.doc('meta/drawers').set({list:data.drawers});
+    hist.undo=[]; hist.redo=[]; updHist();
     toast(removeIds.length ? `Bestand ersetzt: ${nNew} Einträge` : `${writes.length} Einträge importiert`);
   } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
 });
@@ -874,7 +989,7 @@ document.addEventListener('dragstart', e => { const b=e.target.closest('[data-id
 document.addEventListener('dragend', () => { dragId=null; document.querySelectorAll('.drop-on,.dragging,.drop-slot').forEach(x=>x.classList.remove('drop-on','dragging','drop-slot')); });
 document.addEventListener('dragover', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); document.querySelectorAll('.drop-slot').forEach(x=>x.classList.remove('drop-slot')); e.target.closest('[data-slot]')?.classList.add('drop-slot'); document.querySelectorAll('.drop-on').forEach(x=>x!==l&&x.classList.remove('drop-on')); l.classList.add('drop-on'); });
 document.addEventListener('drop', e => {
-  const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); const s=state.spools.get(dragId); if(!s) return;
+  const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); const s=state.spools.get(dragId); if(!s) return; stepLabel(null, s.id);
   const sl=e.target.closest('[data-slot]');
   if (sl && s.kind!=='zubehoer'){ const p=slotted(sl.dataset.sloc); if(p){ setSlot(s.id, p.id, +sl.dataset.slot); toast(`→ ${locName(p.id)} · Slot ${sl.dataset.slot}`); return; } }
   const t=e.target.closest('[data-id]');
@@ -882,7 +997,7 @@ document.addEventListener('drop', e => {
   if (s.loc!==l.dataset.loc){ const p=slotted(l.dataset.loc); if (p){ const free=slotLayout(p).indexOf(null); setSlot(s.id, p.id, free>=0?free+1:slotLayout(p).length+1); } else put({...s,loc:l.dataset.loc,slot:0,pos:Date.now()}); toast(`→ ${locName(l.dataset.loc)}`); }
 });
 
-let tt; function toast(m){ $('#toastHost').innerHTML=`<div class="toast" role="status">${esc(m)}</div>`; clearTimeout(tt); tt=setTimeout(()=>$('#toastHost').innerHTML='',2200); }
+let tt; function toast(m, act, ms){ $('#toastHost').innerHTML=`<div class="toast" role="status"><span>${esc(m)}</span>${act?`<button type="button" id="toastAct">${esc(act.label)}</button>`:''}</div>`; if(act) $('#toastAct').onclick=()=>{ $('#toastHost').innerHTML=''; act.fn(); }; clearTimeout(tt); tt=setTimeout(()=>$('#toastHost').innerHTML='', ms || (act?4500:2200)); }
 
 // --- Handy: Treffer-Liste, Tabs, Mehr-Menü
 function renderResults(){
@@ -907,7 +1022,19 @@ $('#tabs').addEventListener('click', e => {
   if (filtering()){ state.q=''; $('#q').value=''; state.mat=null; state.qual='alle'; render(); }
   applyTab(); window.scrollTo({top:0});
 });
-$('#moreBtn').addEventListener('click', e => { const t=$('#toolbar'); const o=t.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded',o); e.currentTarget.textContent=o?'Weniger':'Mehr'; });
+// --- Printorix-Menü (Backup, Import, Abmelden)
+const menuOpen = o => { $('#menuPop').hidden = !o; $('#menuBtn').setAttribute('aria-expanded', o); };
+$('#menuBtn').addEventListener('click', e => { e.stopPropagation(); menuOpen($('#menuPop').hidden); });
+$('#menuPop').addEventListener('click', e => { if (e.target.closest('button')) menuOpen(false); });
+document.addEventListener('click', e => { if (!e.target.closest('#menu')) menuOpen(false); });
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') menuOpen(false);
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) || editing;
+  if (!typing && (e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); travel(e.shiftKey ? 1 : -1); }
+  if (!typing && (e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='y'){ e.preventDefault(); travel(1); }
+});
+$('#undoBtn').addEventListener('click', () => travel(-1));
+$('#redoBtn').addEventListener('click', () => travel(1));
 $('#fab').addEventListener('click', () => openSheet(blank(tab==='drucker'?'neu':'neu')));
 applyTab();
 
