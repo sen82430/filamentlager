@@ -15,7 +15,7 @@
 <title>Printorix Filamentlager</title>
 <script>try{var t=localStorage.getItem("fl-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: werkstatt-board im Printorix-Look — weisse Fläche, Navy-Kommode, blaue Akzente. Spulen als Draufsicht mit Füllring. */
 :root{
@@ -25,7 +25,7 @@
   --track:#E3E8EF; --track-on-cab:#1A3554;
   --low:#DC2626; --ok:#16A34A; --warn:#F59E0B;
   --ring:#FF7A00; --ring-line:rgba(0,0,0,.6);
-  --display:"Montserrat",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  --display:"Montserrat",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"Inter",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0F1722; --panel:#172231; --ink:#E6ECF3; --muted:#9AA7B6; --line:#26354A;
@@ -36,6 +36,7 @@
   --cab:#13243A; --cab-edge:#0A1524; --drawer:#1C3350; --drawer-hi:#1C3350; --drawer-ink:#E6ECF3; --drawer-muted:#8FB3D9;
   --accent:#4C8DF6; --accent-ink:#FFFFFF; --accent-soft:#1A2F4D; --navy:#99CFFF; --track:#26354A; --track-on-cab:#13243A; --low:#F87171; --ok:#4ADE80; --warn:#FBBF24; color-scheme:dark}
 *{box-sizing:border-box}
+body{font-feature-settings:"tnum" 1,"zero" 0;font-variant-numeric:tabular-nums}
 [hidden]{display:none!important}
 img{max-width:100%}
 html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0;font-size:15.5px;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.45;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
