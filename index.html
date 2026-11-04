@@ -175,6 +175,8 @@ button.ztag{cursor:pointer}
 .floor-row .panel{border-left:4px solid var(--brand-light)}
 
 /* Bestellen */
+.drophint{display:none;font-size:12.5px;color:var(--accent);border:1.5px dashed var(--accent);border-radius:8px;padding:10px;text-align:center}
+body:has(.dragging) .drophint,#reorderPanel.drop-on .drophint{display:block}
 .order-list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .order-list li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border-radius:7px;background:var(--bg)}
 .sw{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
@@ -612,11 +614,12 @@ function simplePanel(l, extra=''){
   return `<div class="panel loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${items.length?`<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>`:'<div class="empty">leer</div>'}${zubRow(l)}${extra}</div>`;
 }
 function reorderPanel(){
-  const items = [...state.reorder.values()].sort((a,b)=>(a.created||0)-(b.created||0));
+  const items = [...state.reorder.values()].sort((a,b)=>(b.created||0)-(a.created||0));
   const listed = new Set(items.map(r=>(r.name||'').toLowerCase()));
   const low = fil([...state.spools.values()]).filter(s=>s.weight<=LOW && !['bestellt'].includes(s.loc));
   const seen = new Set(); const sugg = low.filter(s=>{ const k=label(s).toLowerCase(); if(seen.has(k)||listed.has(k)) return false; seen.add(k); return true; });
-  return `<div class="panel" id="reorderPanel"><div class="lh"><span class="nm">Zu bestellen</span><span class="meta">${items.length} Positionen</span></div>
+  return `<div class="panel loc" id="reorderPanel" data-loc="__reorder"><div class="lh"><span class="nm">Zu bestellen</span><span class="meta">${items.length} Positionen</span></div>
+    <div class="drophint">Rolle hierher ziehen, um sie auf die Bestellliste zu setzen</div>
     ${items.length?`<ul class="order-list">${items.map(r=>`<li><span class="sw" style="background:${fillCss(r)}"></span><span style="min-width:0"><div class="nm">${esc(r.name)}</div><div class="q">${r.qty||1}× ${r.brand?esc(r.brand):''}</div></span><span class="acts"><button class="btn sm" data-ordered="${esc(r.id)}" title="Als bestellt markieren – erscheint unter «In Bestellung»">Bestellt</button><button class="icon-btn" data-delorder="${esc(r.id)}" aria-label="Entfernen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></li>`).join('')}</ul>`:'<div class="empty" style="color:var(--muted)">Nichts offen.</div>'}
     <form class="addrow" id="orderForm"><input id="orderTxt" placeholder="z. B. PETG Basic Schwarz Bambu" aria-label="Was bestellen"><input id="orderQty" type="number" min="1" value="1" aria-label="Anzahl"><button class="btn sm primary" type="submit">Hinzufügen</button></form>
     ${sugg.length?`<div class="lbl">Fast leer (≤ ${LOW} g)</div><div class="sugg">${sugg.map(s=>`<button data-sugg="${esc(s.id)}">+ ${esc(label(s))} · ${s.weight} g</button>`).join('')}</div>`:''}
@@ -1154,13 +1157,24 @@ $('#importFile').addEventListener('change', async e => {
 // Drag & Drop – Maus (HTML5) und Touch (lange drücken), beide mit Auto-Scroll
 let dragId = null;
 function dropOn(target, id){
-  const l = target && target.closest('.loc'); const s = state.spools.get(id); if (!l || !s) return false; stepLabel(null, s.id);
+  const l = target && target.closest('.loc'); const s = state.spools.get(id); if (!l || !s) return false;
+  if (l.dataset.loc==='__reorder'){ orderSpool(s); return true; }
+  stepLabel(null, s.id);
   const sl = target.closest('[data-slot]');
   if (sl && s.kind!=='zubehoer'){ const p=slotted(sl.dataset.sloc); if(p){ setSlot(s.id, p.id, +sl.dataset.slot); toast(`→ ${locName(p.id)} · Slot ${sl.dataset.slot}`); return true; } }
   const t = target.closest('[data-id]');
   if (t && t.dataset.id!==s.id && !slotted(l.dataset.loc)){ insertBefore(s.id, t.dataset.id); if (s.loc!==l.dataset.loc) toast(`→ ${locName(l.dataset.loc)}`); return true; }
   if (s.loc!==l.dataset.loc){ const p=slotted(l.dataset.loc); if (p){ const free=slotLayout(p).indexOf(null); setSlot(s.id, p.id, free>=0?free+1:slotLayout(p).length+1); } else put({...s,loc:l.dataset.loc,slot:0,pos:Date.now()}); toast(`→ ${locName(l.dataset.loc)}`); }
   return true;
+}
+// Rolle auf die Bestellliste: gleicher Artikel schon drin → Anzahl +1, sonst neu zuoberst
+function orderSpool(s){
+  if (s.kind==='zubehoer'){ const ex=[...state.reorder.values()].find(r=>(r.name||'').toLowerCase()===String(s.name).toLowerCase()); stepLabel(`${s.name} auf die Bestellliste`); if (ex){ putOrder({...ex, qty:(+ex.qty||1)+1, created:Date.now()}); toast(`${s.name}: Anzahl jetzt ${(+ex.qty||1)+1}`); } else { putOrder({id:newId('r'), name:s.name, qty:1, created:Date.now()}); toast(`${s.name} auf die Bestellliste gesetzt`); } return; }
+  const name = label(s)+(s.finish?' '+s.finish:'');
+  const ex = [...state.reorder.values()].find(r => (r.name||'').toLowerCase()===name.toLowerCase() && (r.brand||'')===(s.brand||''));
+  stepLabel(`${label(s)} auf die Bestellliste`);
+  if (ex){ putOrder({...ex, qty:(+ex.qty||1)+1, created:Date.now()}); toast(`${name}: Anzahl jetzt ${(+ex.qty||1)+1}`); }
+  else { putOrder({id:newId('r'), name, material:s.material, color:s.color, hex:s.hex, brand:s.brand, finish:s.finish, qty:1, created:Date.now()}); toast(`${name} auf die Bestellliste gesetzt – die Rolle bleibt am Lager`); }
 }
 function markTarget(target){
   const l = target && target.closest('.loc');
