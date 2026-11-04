@@ -295,7 +295,7 @@ h1{flex-wrap:wrap}
       </div>
     </section>
     <section data-sec="drucker">
-      <div class="sect-h"><h2>Drucker &amp; Trockner</h2><span class="sum" id="sumDrucker"></span></div>
+      <div class="sect-h"><h2>Drucker &amp; Trockner</h2><span style="display:flex;gap:10px;align-items:center"><span class="sum" id="sumDrucker"></span><button class="btn sm" id="addDev">+ Gerät</button></span></div>
       <div class="stack" id="printers"></div>
     </section>
     <section data-sec="boden">
@@ -336,12 +336,15 @@ const LOCS = [
   {id:'s1',name:'Schublade 1',zone:'top'},{id:'s2',name:'Schublade 2',zone:'top'},{id:'s3',name:'Schublade 3',zone:'top'},{id:'s4',name:'Schublade 4',zone:'top'},
   {id:'s5',name:'Schublade 5',zone:'mid'},{id:'s6',name:'Schublade 6',zone:'mid'},
   {id:'s7',name:'Schublade 7',zone:'bot'},{id:'s8',name:'Schublade 8',zone:'bot'},
-  {id:'h2s',name:'Bambu Lab H2S · AMS',zone:'printer',slots:4},{id:'h2s2',name:'H2S · Zusatz',zone:'printer'},
-  {id:'h2d',name:'Bambu Lab H2D · AMS',zone:'printer'},{id:'a1',name:'Bambu Lab A1 mini',zone:'printer',slots:4},
-  {id:'dry',name:'Sovol Filamenttrockner',zone:'printer'},
   {id:'bodenS',name:'Reihe 1 · Schwarz',zone:'floor'},{id:'bodenW',name:'Reihe 2 · Weiss',zone:'floor'},
   {id:'neu',name:'Noch einzuordnen',zone:'inbox'},{id:'bestellt',name:'In Bestellung',zone:'inbox'}
 ];
+const DEFAULT_PRINTERS = [
+  {id:'h2s',name:'Bambu Lab H2S · AMS',slots:4},{id:'h2s2',name:'H2S · Zusatz',slots:0},
+  {id:'h2d',name:'Bambu Lab H2D · AMS',slots:0},{id:'a1',name:'Bambu Lab A1 mini',slots:4},
+  {id:'dry',name:'Sovol Filamenttrockner',slots:0}
+];
+const locs = () => [...LOCS.filter(l=>['top','mid','bot'].includes(l.zone)), ...state.printers.map(p=>({...p,zone:'printer'})), ...LOCS.filter(l=>['floor','inbox'].includes(l.zone))];
 const MATS = ['PLA','PETG','PCTG','ABS','ASA','TPU','PA','PC','Resin'];
 const BRANDS = ['Bambu Lab','3DJake','Extrudr','Prusament','Polymaker','eSun','Sunlu','Elegoo'];
 const COLORS = [['Schwarz','#1c1c1e'],['Weiss','#f4f4f2'],['Grau','#8a8d90'],['Rot','#d0312d'],['Orange','#f28b2c'],['Gelb','#f5c518'],['Gold','#c9a227'],['Beige','#d9c6a5'],['Braun','#7a4b2a'],['Holz','#a87b4f'],['Olivgrün','#6b7a3a'],['Grün','#2e9e4f'],['Hellgrün','#8fd16a'],['Türkis','#1fb5ad'],['Blau','#2c62c9'],['Muted Blue','#6d86a3'],['Army Blue','#3e4f5f'],['Pink','#f08bb4'],['Marmor','#cfcac2'],['Klar','#dfeaf0'],['Rainbow','rainbow']];
@@ -349,12 +352,12 @@ const COLOR_KEYS = [['MUTED BLUE','Muted Blue'],['ARMY BLUE','Army Blue'],['OLIV
 const MAT_COLORS = {PLA:'#4c6ef5',PETG:'#e8590c',PCTG:'#ae3ec9',ABS:'#2f9e44',ASA:'#0c8599',TPU:'#f59f00',PA:'#868e96',PC:'#495057',Resin:'#c2255c'};
 const LOW = 150;
 
-const state = { spools:new Map(), reorder:new Map(), names:{}, q:'', mat:null, qual:'alle', loaded:false };
+const state = { spools:new Map(), reorder:new Map(), names:{}, printers:DEFAULT_PRINTERS.map(p=>({...p})), q:'', mat:null, qual:'alle', loaded:false };
 let db = null;
 const $ = (s,el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kg = g => g >= 1000 ? (g/1000).toLocaleString('de-CH',{maximumFractionDigits:2}) + ' kg' : Math.round(g) + ' g';
-const locName = id => state.names[id] || (LOCS.find(l=>l.id===id)||{}).name || id;
+const locName = id => { const pr = state.printers.find(p=>p.id===id); if (pr) return pr.name; return state.names[id] || (LOCS.find(l=>l.id===id)||{}).name || id; };
 const hexOf = c => (COLORS.find(x=>x[0].toLowerCase()===String(c||'').toLowerCase())||[])[1] || '';
 const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
@@ -414,7 +417,7 @@ const pencil = `<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></sv
 const plus = `<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
 function head(l, items){
   const f = fil(items); const meta = f.length ? `${f.length} · ${kg(sumG(items))}` : (items.length? `${items.length} Teile` : 'leer');
-  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span><button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button><button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
+  return `<div class="lh"><span class="nm">${esc(locName(l.id))}</span><span style="display:flex;align-items:center;gap:2px"><span class="meta">${meta}</span>${l.zone==='printer'?`<button class="icon-btn" data-dev="${l.id}" aria-label="${esc(locName(l.id))} bearbeiten">${pencil}</button>`:`<button class="icon-btn" data-rename="${l.id}" aria-label="${esc(locName(l.id))} umbenennen">${pencil}</button>`}<button class="icon-btn" data-add="${l.id}" aria-label="Rolle in ${esc(locName(l.id))} hinzufügen">${plus}</button></span></div>`;
 }
 function drawer(l){
   const items = inLoc(l.id); const f = fil(items), z = items.filter(s=>s.kind==='zubehoer');
@@ -463,7 +466,7 @@ function render(){
   // hit
   if (filtering()){ const m = f.filter(matches); $('#hit').innerHTML = `<b>${m.length}</b> Rollen · <b>${kg(sumG(m))}</b>`; } else $('#hit').textContent='';
   // zones
-  const z = n => LOCS.filter(l=>l.zone===n);
+  const z = n => locs().filter(l=>l.zone===n);
   $('#rowTop').innerHTML = z('top').map(drawer).join('');
   $('#rowMid').innerHTML = z('mid').map(drawer).join('');
   $('#rowBot').innerHTML = z('bot').map(drawer).join('');
@@ -544,6 +547,7 @@ function connect(){
       render();
     }, err));
     unsubs.push(fs.collection('reorder').onSnapshot(snap => { state.reorder = new Map(snap.docs.map(d=>[d.id,{id:d.id,...d.data()}])); render(); }, err));
+    unsubs.push(fs.doc('meta/printers').onSnapshot(snap => { const l = snap.exists && snap.data().list; state.printers = Array.isArray(l) ? l.map(p=>({...p})) : DEFAULT_PRINTERS.map(p=>({...p})); render(); }, ()=>{}));
     unsubs.push(fs.doc('meta/names').onSnapshot(snap => { state.names = snap.exists ? {...snap.data()} : {}; render(); }, ()=>{}));
   });
 }
@@ -557,7 +561,7 @@ function openSheet(s){
   editing = JSON.parse(JSON.stringify(s));
   const isZ = editing.kind==='zubehoer';
   const isNew = !state.spools.has(editing.id);
-  const locOpts = LOCS.map(l=>`<option value="${l.id}"${l.id===editing.loc?' selected':''}>${esc(locName(l.id))}</option>`).join('');
+  const locOpts = locs().map(l=>`<option value="${l.id}"${l.id===editing.loc?' selected':''}>${esc(locName(l.id))}</option>`).join('');
   $('#sheetHost').innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
     ${isZ ? `<h3 id="shT">${isNew?'Zubehör erfassen':'Zubehör'}</h3>
       <div class="field"><label for="fName">Bezeichnung</label><input id="fName" value="${esc(editing.name)}" required></div>
@@ -629,6 +633,57 @@ function close(){ $('#sheetHost').innerHTML=''; editing=null; }
 document.addEventListener('keydown', e => { if (e.key==='Escape' && editing) close(); if (e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA'){ e.preventDefault(); $('#q').focus(); } });
 const blank = loc => ({id:newId('f'),kind:'filament',name:'',material:'PLA',color:'Schwarz',hex:'#1c1c1e',brand:'',finish:'',weight:1000,full:1000,quality:'gut',loc:loc||'neu',pos:Date.now(),note:''});
 
+// --- Drucker / Trockner verwalten
+async function savePrinters(list){
+  state.printers = list.map(p=>({...p})); render();
+  if (!db) return;
+  try { await db.doc('meta/printers').set({list:state.printers}); } catch(e){ toast('Speichern fehlgeschlagen: '+(e.code||e.message)); }
+}
+function openDevice(id){
+  const isNew = !id; const p = isNew ? {id:newId('p'), name:'', slots:4} : {...state.printers.find(x=>x.id===id)};
+  if (!p || !p.id) return;
+  const idx = state.printers.findIndex(x=>x.id===p.id); const n = fil(inLoc(p.id)).length + inLoc(p.id).filter(s=>s.kind==='zubehoer').length;
+  editing = {kind:'device'};
+  $('#sheetHost').innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+    <h3 id="shT">${isNew?'Neues Gerät':'Gerät bearbeiten'}</h3>
+    <div class="field"><label for="dName">Name</label><input id="dName" value="${esc(p.name)}" placeholder="z. B. Bambu Lab P1S · AMS, Sunlu Trockner" required></div>
+    <div class="field"><label for="dSlots">Slots</label><input id="dSlots" type="number" min="0" max="24" step="1" value="${+p.slots||0}">
+      <span class="note">Anzahl fester Plätze, z. B. 4 für ein AMS. 0 = ohne feste Slots (Trockner, Ablage).</span></div>
+    <div class="quick"><span class="lbl" style="align-self:center;margin-right:4px">Slots</span>${[0,1,2,4,8].map(v=>`<button type="button" class="btn sm" data-slots="${v}">${v||'frei'}</button>`).join('')}</div>
+    ${!isNew && state.printers.length>1 ? `<div class="field"><span class="lbl">Reihenfolge</span><div class="quick"><button type="button" class="btn sm" id="dUp" ${idx<=0?'disabled':''}>↑ Nach oben</button><button type="button" class="btn sm" id="dDown" ${idx>=state.printers.length-1?'disabled':''}>↓ Nach unten</button></div></div>`:''}
+    <div class="actions">
+      <button class="btn primary" type="submit">Speichern</button>
+      <button class="btn" type="button" id="cancel">Abbrechen</button>
+      ${!isNew?`<button class="btn danger" type="button" id="dDel">Gerät löschen</button>`:''}
+    </div>
+    <div id="confirmHost"></div>
+  </form></div>`;
+  const sh = $('#sheet');
+  sh.addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    if (b.dataset.slots!==undefined){ $('#dSlots').value = b.dataset.slots; }
+    if (b.id==='cancel') close();
+    if (b.id==='dUp' || b.id==='dDown'){ const l=state.printers.map(x=>({...x})); const j=idx+(b.id==='dUp'?-1:1); [l[idx],l[j]]=[l[j],l[idx]]; savePrinters(l); close(); }
+    if (b.id==='dDel'){ $('#confirmHost').innerHTML = `<div class="confirm">«${esc(p.name)}» löschen?${n?` Die ${n} Rolle${n>1?'n':''} darauf ${n>1?'gehen':'geht'} nach «${esc(locName('neu'))}».`:''} <button type="button" class="btn sm danger" id="dYes">Ja, löschen</button><button type="button" class="btn sm" id="dNo">Nein</button></div>`; }
+    if (b.id==='dNo') $('#confirmHost').innerHTML='';
+    if (b.id==='dYes'){
+      const moved = inLoc(p.id); moved.forEach((s,i)=>put({...s, loc:'neu', pos:Date.now()+i}));
+      savePrinters(state.printers.filter(x=>x.id!==p.id));
+      toast(moved.length ? `Gelöscht – ${moved.length} nach «${locName('neu')}» verschoben` : 'Gerät gelöscht'); close();
+    }
+  });
+  sh.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#dName').value.trim(); if(!name) return $('#dName').focus();
+    const slots = Math.max(0, Math.min(24, Math.round(+$('#dSlots').value||0)));
+    const l = state.printers.map(x=>({...x}));
+    if (isNew) l.push({id:p.id, name, slots}); else l[idx] = {...l[idx], name, slots};
+    savePrinters(l); toast(isNew?'Gerät hinzugefügt':'Gespeichert'); close();
+  });
+  $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
+  if (!matchMedia('(max-width:760px)').matches) $('#dName').focus();
+}
+
 // --- Rename
 function rename(id){
   const host = document.querySelector(`[data-loc="${id}"] .nm`); if(!host) return;
@@ -643,6 +698,8 @@ function rename(id){
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b || b.closest('#sheet')) return;
   if (b.dataset.id){ const s=state.spools.get(b.dataset.id); if(s) openSheet(s); return; }
+  if (b.dataset.dev){ openDevice(b.dataset.dev); return; }
+  if (b.id==='addDev'){ openDevice(null); return; }
   if (b.dataset.add){ openSheet(blank(b.dataset.add)); return; }
   if (b.dataset.rename){ rename(b.dataset.rename); return; }
   if ('mat' in b.dataset){ state.mat = b.dataset.mat || null; render(); return; }
@@ -662,12 +719,12 @@ $('#addBtn').addEventListener('click', () => openSheet(blank('neu')));
 $('#addZub').addEventListener('click', () => openSheet({id:newId('z'),kind:'zubehoer',name:'',qty:'',loc:'s8',pos:Date.now()}));
 $('#csvBtn').addEventListener('click', async () => {
   const rows = [['Ort','Typ','Material','Farbe','Finish','Marke','Restgewicht g','Rollengrösse g','Qualität','Bezeichnung','Notiz']];
-  LOCS.forEach(l => inLoc(l.id).forEach(s => rows.push([locName(l.id), s.kind==='zubehoer'?'Zubehör':'Filament', s.material||'', s.color||'', s.finish||'', s.brand||'', s.kind==='zubehoer'?'':s.weight, s.kind==='zubehoer'?'':(s.full||1000), s.quality||'', s.kind==='zubehoer'?(s.name+' '+(s.qty||'')).trim():s.name, (s.note||'').replace(/\n/g,' ')])));
+  locs().forEach(l => inLoc(l.id).forEach(s => rows.push([locName(l.id), s.kind==='zubehoer'?'Zubehör':'Filament', s.material||'', s.color||'', s.finish||'', s.brand||'', s.kind==='zubehoer'?'':s.weight, s.kind==='zubehoer'?'':(s.full||1000), s.quality||'', s.kind==='zubehoer'?(s.name+' '+(s.qty||'')).trim():s.name, (s.note||'').replace(/\n/g,' ')])));
   const csv = '﻿' + rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
   saveFile(`Lagerbestand_Filament_${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv;charset=utf-8');
 });
 $('#backupBtn').addEventListener('click', () => {
-  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names};
+  const out = {exported:new Date().toISOString(), spools:[...state.spools.values()], reorder:[...state.reorder.values()], names:state.names, printers:state.printers};
   saveFile(`filamentlager-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(out,null,1), 'application/json');
 });
 $('#importBtn').addEventListener('click', () => $('#importFile').click());
@@ -695,6 +752,7 @@ $('#importFile').addEventListener('change', async e => {
   try {
     for (let i=0;i<ops.length;i+=400){ const b=db.batch(); ops.slice(i,i+400).forEach(([op,c,x])=>{ if(op==='del') b.delete(db.collection(c).doc(x)); else { const {id,...body}=x; b.set(db.collection(c).doc(String(id)), body); } }); await b.commit(); }
     if (data.names && Object.keys(data.names).length) await db.doc('meta/names').set(data.names);
+    if (Array.isArray(data.printers) && data.printers.length) await db.doc('meta/printers').set({list:data.printers});
     toast(removeIds.length ? `Bestand ersetzt: ${nNew} Einträge` : `${writes.length} Einträge importiert`);
   } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
 });
@@ -711,7 +769,7 @@ let tt; function toast(m){ $('#toastHost').innerHTML=`<div class="toast" role="s
 // --- Handy: Treffer-Liste, Tabs, Mehr-Menü
 function renderResults(){
   if (!filtering()){ $('#results').innerHTML=''; return; }
-  const order = Object.fromEntries(LOCS.map((l,i)=>[l.id,i]));
+  const order = Object.fromEntries(locs().map((l,i)=>[l.id,i]));
   const m = [...state.spools.values()].filter(matches).sort((a,b)=>(order[a.loc]??99)-(order[b.loc]??99)||(a.pos??0)-(b.pos??0));
   const f = fil(m);
   $('#results').innerHTML = `<div class="sect-h"><h2>Treffer</h2><span class="sum">${f.length} Rollen · ${kg(sumG(m))}</span></div>` +
