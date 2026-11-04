@@ -129,6 +129,11 @@ h1 small{font-family:var(--mono);font-size:12.5px;font-weight:400;color:var(--mu
 .drawer .spool .w{color:var(--drawer-ink)}
 .spool.low .w{color:var(--low);font-weight:700}
 .drawer .spool.low .w{color:#FFB4B4}
+.drag-ghost{position:fixed;left:0;top:0;z-index:90;pointer-events:none;display:grid;justify-items:center;gap:4px;padding:8px 10px;border-radius:14px;background:var(--panel);border:1px solid var(--line);box-shadow:0 18px 36px -10px rgba(0,0,0,.45);font-weight:600;font-size:13px;color:var(--ink);will-change:transform}
+.drag-ghost .disc{width:48px;height:48px}
+body.touch-dragging{user-select:none;-webkit-user-select:none}
+.spool,.ztag{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.tabs button.tab-hover{color:var(--accent);background:var(--accent-soft)}
 .discwrap{position:relative;display:grid;place-items:center}
 .spool{align-content:start}
 .spool .t{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:clip;min-height:2.3em;max-width:100%}
@@ -436,6 +441,7 @@ const LOW = 150;
 
 const state = { spools:new Map(), reorder:new Map(), names:{}, printers:DEFAULT_PRINTERS.map(p=>({...p})), drawers:DEFAULT_DRAWERS.map(d=>({...d})), drawersStored:false, q:'', mat:null, qual:'alle', loaded:false };
 let db = null;
+const COARSE = matchMedia('(pointer: coarse)').matches;
 const $ = (s,el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kg = g => g >= 1000 ? (g/1000).toLocaleString('de-CH',{maximumFractionDigits:2}) + ' kg' : Math.round(g) + ' g';
@@ -492,9 +498,9 @@ const sumG = arr => fil(arr).reduce((a,s)=>a+(+s.weight||0),0);
 function spoolBtn(s,onCab){
   const cls = ['spool']; if (s.weight<=LOW) cls.push('low'); if (s.quality==='test') cls.push('test');
   if (filtering()) cls.push(matches(s)?'match':'dim');
-  return `<button class="${cls.join(' ')}" draggable="true" data-id="${esc(s.id)}" title="${esc(title(s))}"><span class="t">${esc(label(s))}</span><span class="discwrap">${discHtml(s,onCab)}${s.quality==='test'?'<span class="badge">TEST</span>':''}</span><span class="w">${s.weight} g</span></button>`;
+  return `<button class="${cls.join(' ')}" draggable="${COARSE?'false':'true'}" data-id="${esc(s.id)}" title="${esc(title(s))}"><span class="t">${esc(label(s))}</span><span class="discwrap">${discHtml(s,onCab)}${s.quality==='test'?'<span class="badge">TEST</span>':''}</span><span class="w">${s.weight} g</span></button>`;
 }
-function zubHtml(s){ const c = filtering()?(matches(s)?' match':' dim'):''; return `<button class="ztag${c}" data-id="${esc(s.id)}" draggable="true">${esc(s.name)}${s.qty?` <span style="opacity:.6">${esc(s.qty)}</span>`:''}</button>`; }
+function zubHtml(s){ const c = filtering()?(matches(s)?' match':' dim'):''; return `<button class="ztag${c}" data-id="${esc(s.id)}" draggable="${COARSE?'false':'true'}">${esc(s.name)}${s.qty?` <span style="opacity:.6">${esc(s.qty)}</span>`:''}</button>`; }
 const pencil = `<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>`;
 const plus = `<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
 const up = `<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>`;
@@ -1003,19 +1009,91 @@ $('#importFile').addEventListener('change', async e => {
   } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
 });
 
-// Drag & Drop (Desktop) – mobil über «Ort» im Editor
+// Drag & Drop – Maus (HTML5) und Touch (lange drücken), beide mit Auto-Scroll
 let dragId = null;
-document.addEventListener('dragstart', e => { const b=e.target.closest('[data-id]'); if(!b) return; dragId=b.dataset.id; b.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',dragId);}catch(_){} });
-document.addEventListener('dragend', () => { dragId=null; document.querySelectorAll('.drop-on,.dragging,.drop-slot').forEach(x=>x.classList.remove('drop-on','dragging','drop-slot')); });
-document.addEventListener('dragover', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); document.querySelectorAll('.drop-slot').forEach(x=>x.classList.remove('drop-slot')); e.target.closest('[data-slot]')?.classList.add('drop-slot'); document.querySelectorAll('.drop-on').forEach(x=>x!==l&&x.classList.remove('drop-on')); l.classList.add('drop-on'); });
-document.addEventListener('drop', e => {
-  const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); const s=state.spools.get(dragId); if(!s) return; stepLabel(null, s.id);
-  const sl=e.target.closest('[data-slot]');
-  if (sl && s.kind!=='zubehoer'){ const p=slotted(sl.dataset.sloc); if(p){ setSlot(s.id, p.id, +sl.dataset.slot); toast(`→ ${locName(p.id)} · Slot ${sl.dataset.slot}`); return; } }
-  const t=e.target.closest('[data-id]');
-  if (t && t.dataset.id!==s.id && !slotted(l.dataset.loc)){ insertBefore(s.id, t.dataset.id); if (s.loc!==l.dataset.loc) toast(`→ ${locName(l.dataset.loc)}`); return; }
+function dropOn(target, id){
+  const l = target && target.closest('.loc'); const s = state.spools.get(id); if (!l || !s) return false; stepLabel(null, s.id);
+  const sl = target.closest('[data-slot]');
+  if (sl && s.kind!=='zubehoer'){ const p=slotted(sl.dataset.sloc); if(p){ setSlot(s.id, p.id, +sl.dataset.slot); toast(`→ ${locName(p.id)} · Slot ${sl.dataset.slot}`); return true; } }
+  const t = target.closest('[data-id]');
+  if (t && t.dataset.id!==s.id && !slotted(l.dataset.loc)){ insertBefore(s.id, t.dataset.id); if (s.loc!==l.dataset.loc) toast(`→ ${locName(l.dataset.loc)}`); return true; }
   if (s.loc!==l.dataset.loc){ const p=slotted(l.dataset.loc); if (p){ const free=slotLayout(p).indexOf(null); setSlot(s.id, p.id, free>=0?free+1:slotLayout(p).length+1); } else put({...s,loc:l.dataset.loc,slot:0,pos:Date.now()}); toast(`→ ${locName(l.dataset.loc)}`); }
-});
+  return true;
+}
+function markTarget(target){
+  const l = target && target.closest('.loc');
+  document.querySelectorAll('.drop-slot').forEach(x=>x.classList.remove('drop-slot'));
+  target && target.closest('[data-slot]')?.classList.add('drop-slot');
+  document.querySelectorAll('.drop-on').forEach(x=>x!==l&&x.classList.remove('drop-on'));
+  l && l.classList.add('drop-on');
+}
+function clearMarks(){ document.querySelectorAll('.drop-on,.dragging,.drop-slot,.tab-hover').forEach(x=>x.classList.remove('drop-on','dragging','drop-slot','tab-hover')); }
+// Auto-Scroll: nahe am oberen/unteren Rand scrollt die Seite mit
+let scrollY0 = null, scrollRaf = 0;
+function edges(){
+  const hd = $('header.top'); const sticky = hd && getComputedStyle(hd).position==='sticky';
+  const top = (sticky ? hd.getBoundingClientRect().bottom : 0) + 80;
+  const tabs = $('#tabs'); const tb = tabs && getComputedStyle(tabs).display!=='none' ? tabs.getBoundingClientRect().top : innerHeight;
+  return {top, bottom: tb - 80, tabTop: tb};
+}
+function scrollTick(){
+  if (scrollY0==null){ scrollRaf=0; return; }
+  const {top, bottom, tabTop} = edges(); let dy = 0;
+  if (scrollY0 < top) dy = -Math.min(28, (top - scrollY0) / 3 + 2);
+  else if (scrollY0 > bottom && scrollY0 < tabTop) dy = Math.min(28, (scrollY0 - bottom) / 3 + 2);
+  if (dy) window.scrollBy(0, dy);
+  scrollRaf = requestAnimationFrame(scrollTick);
+}
+const startScroll = y => { scrollY0 = y; if (!scrollRaf) scrollRaf = requestAnimationFrame(scrollTick); };
+const stopScroll = () => { scrollY0 = null; };
+
+// Maus
+document.addEventListener('dragstart', e => { const b=e.target.closest('[data-id]'); if(!b) return; dragId=b.dataset.id; b.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',dragId);}catch(_){} startScroll(e.clientY); });
+document.addEventListener('dragend', () => { dragId=null; stopScroll(); clearMarks(); });
+document.addEventListener('dragover', e => { if (!dragId) return; scrollY0 = e.clientY; const l=e.target.closest('.loc'); if(!l) return; e.preventDefault(); markTarget(e.target); });
+document.addEventListener('drop', e => { if (!dragId || !e.target.closest('.loc')) return; e.preventDefault(); dropOn(e.target, dragId); });
+
+// Touch: lange drücken (0.35 s), dann ziehen
+let tPress = null, tDrag = null, suppressClick = false;
+document.addEventListener('touchstart', e => {
+  const b = e.target.closest('.spool[data-id], .ztag[data-id]'); if (!b || e.touches.length>1 || editing) return;
+  const t = e.touches[0];
+  tPress = {id:b.dataset.id, el:b, x:t.clientX, y:t.clientY, timer:setTimeout(() => startTouchDrag(), 350)};
+}, {passive:true});
+function startTouchDrag(){
+  if (!tPress) return; const {id, el, x, y} = tPress; tPress = null;
+  const disc = el.querySelector('.disc') || el; const g = document.createElement('div'); g.className='drag-ghost';
+  g.innerHTML = disc.outerHTML + `<span>${esc(el.querySelector('.t')?.textContent || el.textContent)}</span>`;
+  document.body.appendChild(g); el.classList.add('dragging'); document.body.classList.add('touch-dragging');
+  tDrag = {id, ghost:g, x, y, tabTimer:0, tabEl:null}; moveGhost(x, y); startScroll(y);
+  navigator.vibrate?.(15);
+}
+function moveGhost(x, y){ if (!tDrag) return; tDrag.x=x; tDrag.y=y; tDrag.ghost.style.transform = `translate(${x-34}px, ${y-82}px)`; }
+document.addEventListener('touchmove', e => {
+  if (tPress){ const t=e.touches[0]; if (Math.hypot(t.clientX-tPress.x, t.clientY-tPress.y) > 10){ clearTimeout(tPress.timer); tPress=null; } return; }
+  if (!tDrag) return;
+  e.preventDefault();
+  const t = e.touches[0]; moveGhost(t.clientX, t.clientY); scrollY0 = t.clientY;
+  const under = document.elementFromPoint(t.clientX, t.clientY);
+  const tabBtn = under && under.closest('#tabs button');
+  if (tabBtn !== tDrag.tabEl){
+    clearTimeout(tDrag.tabTimer); document.querySelectorAll('.tab-hover').forEach(x=>x.classList.remove('tab-hover')); tDrag.tabEl = tabBtn;
+    if (tabBtn && tabBtn.dataset.tab !== tab){ tabBtn.classList.add('tab-hover'); tDrag.tabTimer = setTimeout(() => { tab = tabBtn.dataset.tab; try{ localStorage.setItem('fl-tab',tab); }catch(_){} applyTab(); window.scrollTo({top:0}); tabBtn.classList.remove('tab-hover'); navigator.vibrate?.(10); }, 450); }
+  }
+  markTarget(tabBtn ? null : under);
+}, {passive:false});
+function endTouch(e, drop){
+  if (tPress){ clearTimeout(tPress.timer); tPress=null; return; }
+  if (!tDrag) return;
+  const {id, x, y, ghost} = tDrag; clearTimeout(tDrag.tabTimer); tDrag = null;
+  ghost.remove(); document.body.classList.remove('touch-dragging'); stopScroll();
+  if (drop){ const under = document.elementFromPoint(x, y); if (under && !under.closest('#tabs')) dropOn(under, id); }
+  clearMarks(); suppressClick = true; setTimeout(()=>suppressClick=false, 400);
+}
+document.addEventListener('touchend', e => endTouch(e, true));
+document.addEventListener('touchcancel', e => endTouch(e, false));
+document.addEventListener('click', e => { if (suppressClick){ e.preventDefault(); e.stopPropagation(); suppressClick=false; } }, true);
+document.addEventListener('contextmenu', e => { if (tDrag || e.target.closest('.spool[data-id], .ztag[data-id]') && COARSE) e.preventDefault(); });
 
 let tt; function toast(m, act, ms){ $('#toastHost').innerHTML=`<div class="toast" role="status"><span>${esc(m)}</span>${act?`<button type="button" id="toastAct">${esc(act.label)}</button>`:''}</div>`; if(act) $('#toastAct').onclick=()=>{ $('#toastHost').innerHTML=''; act.fn(); }; clearTimeout(tt); tt=setTimeout(()=>$('#toastHost').innerHTML='', ms || (act?4500:2200)); }
 
