@@ -677,10 +677,25 @@ $('#importFile').addEventListener('change', async e => {
   const spools = Array.isArray(data) ? data : (data.spools||[]); const reorder = Array.isArray(data) ? [] : (data.reorder||[]);
   const writes = [...spools.map(s=>['spools',s]), ...reorder.map(r=>['reorder',r])].filter(([,x])=>x && x.id);
   if (!writes.length) return toast('Keine Einträge in der Datei gefunden');
+  const nNew = spools.filter(s=>s&&s.id).length;
+  const ask = (msg) => new Promise(res => {
+    $('#status').innerHTML = `<div class="banner" style="display:grid;gap:10px"><div>${msg}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" id="impYes">Ersetzen</button><button class="btn sm" id="impNo">Abbrechen</button></div></div>`;
+    $('#impYes').onclick = () => { $('#status').innerHTML=''; res(true); };
+    $('#impNo').onclick = () => { $('#status').innerHTML=''; res(false); };
+    window.scrollTo({top:0});
+  });
+  let removeIds = [];
+  if (!Array.isArray(data) && data.replace === true && state.spools.size){
+    const keep = new Set(spools.map(s=>String(s.id)));
+    removeIds = [...state.spools.keys()].filter(id=>!keep.has(id));
+    const ok = await ask(`Diese Datei <b>ersetzt den ganzen Bestand</b>: ${state.spools.size} aktuelle Einträge werden durch ${nNew} Einträge aus der Datei ersetzt. Die Bestellliste bleibt erhalten.`);
+    if (!ok) return toast('Import abgebrochen');
+  }
+  const ops = [...removeIds.map(id=>['del','spools',id]), ...writes.map(([c,x])=>['set',c,x])];
   try {
-    for (let i=0;i<writes.length;i+=400){ const b=db.batch(); writes.slice(i,i+400).forEach(([c,x])=>{ const {id,...body}=x; b.set(db.collection(c).doc(String(id)), body); }); await b.commit(); }
+    for (let i=0;i<ops.length;i+=400){ const b=db.batch(); ops.slice(i,i+400).forEach(([op,c,x])=>{ if(op==='del') b.delete(db.collection(c).doc(x)); else { const {id,...body}=x; b.set(db.collection(c).doc(String(id)), body); } }); await b.commit(); }
     if (data.names && Object.keys(data.names).length) await db.doc('meta/names').set(data.names);
-    toast(`${writes.length} Einträge importiert`);
+    toast(removeIds.length ? `Bestand ersetzt: ${nNew} Einträge` : `${writes.length} Einträge importiert`);
   } catch(err){ toast('Import fehlgeschlagen: '+(err.code||err.message)); }
 });
 
