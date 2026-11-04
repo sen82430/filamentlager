@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Filament">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Printorix Filamentlager</title>
+<script>try{var t=localStorage.getItem("fl-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
@@ -23,6 +24,7 @@
   --accent:#2563EB; --accent-ink:#FFFFFF; --accent-soft:#EAF2FD; --brand:#2B77C2; --brand-light:#99CFFF; --navy:#1E3A5F;
   --track:#E3E8EF; --track-on-cab:#1A3554;
   --low:#DC2626; --ok:#16A34A; --warn:#F59E0B;
+  --ring:#FF7A00; --ring-line:rgba(0,0,0,.6);
   --display:"Montserrat",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -115,8 +117,8 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .spools{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px 6px}
 .spool{border:0;background:transparent;padding:0;display:grid;justify-items:center;gap:3px;position:relative;transition:opacity .15s,transform .15s;min-width:0}
 .spool:hover{transform:translateY(-2px)}
-.disc{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;position:relative}
-.disc .fill{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.disc{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;position:relative;box-shadow:0 0 0 1px var(--ring-line)}
+.disc .fill{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 1px var(--ring-line),inset 0 0 0 1px rgba(0,0,0,.18)}
 .disc .fill::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--hub,var(--bg));box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
 .spool .t{font-size:10.5px;line-height:1.15;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .spool .w{font-family:var(--mono);font-size:10px;opacity:.75;font-variant-numeric:tabular-nums}
@@ -124,7 +126,7 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .drawer .spool.low .w{color:#FCA5A5}
 .badge{position:absolute;top:-2px;right:calc(50% - 30px);font-family:var(--mono);font-size:9px;font-weight:500;line-height:1;padding:3px 4px;border-radius:4px;background:var(--warn);color:#111}
 .spool.dim{opacity:.13}
-.spool.match .disc{box-shadow:0 0 0 2px var(--accent)}
+.spool.match .disc{box-shadow:0 0 0 1px var(--ring-line),0 0 0 3px var(--accent)}
 .spool.test .disc .fill{outline:2px dashed var(--warn);outline-offset:2px}
 .spool.dragging{opacity:.4}
 .zub{display:flex;flex-wrap:wrap;gap:5px}
@@ -298,6 +300,10 @@ h1{flex-wrap:wrap}
 .menuPop button{height:40px;border:0;background:transparent;border-radius:8px;text-align:left;padding:0 10px;display:flex;align-items:center;gap:10px;font-weight:500}
 .menuPop button:hover{background:var(--accent-soft);color:var(--accent)}
 .menuPop button.danger{color:var(--low)}
+.switch{margin-left:auto;width:40px;height:24px;border-radius:12px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.switch span{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+[aria-checked="true"] .switch{background:var(--ring)}
+[aria-checked="true"] .switch span{transform:translateX(16px)}
 .menuPop svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 /* Login */
 .gate{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:24px}
@@ -322,6 +328,7 @@ h1{flex-wrap:wrap}
         <button class="menuBtn" id="menuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="menuPop" title="Menü"><img src="printorix-icon.png" alt="Menü"></button>
         <div class="menuPop" id="menuPop" role="menu" hidden>
           <div class="who" id="who">nicht angemeldet</div>
+          <button role="menuitemcheckbox" id="themeBtn" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>Dunkelmodus<span class="switch" aria-hidden="true"><span></span></span></button>
           <button role="menuitem" id="backupBtn" title="Kompletter Bestand als JSON sichern"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Backup herunterladen</button>
           <button role="menuitem" id="importBtn" title="JSON-Backup oder Startbestand einlesen"><svg viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M4 20h16"/></svg>Import</button>
           <button role="menuitem" class="danger" id="logoutBtn"><svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Abmelden</button>
@@ -443,7 +450,7 @@ function pct(s){ const full = +s.full || 1000; return Math.max(0, Math.min(1, (+
 function discHtml(s, onCab){
   const p = Math.round(pct(s)*100);
   const track = onCab ? 'var(--track-on-cab)' : 'var(--track)';
-  const ring = s.weight <= LOW ? (onCab ? '#F87171' : 'var(--low)') : (onCab ? 'var(--brand-light)' : 'var(--accent)');
+  const ring = 'var(--ring)';
   return `<span class="disc" style="background:conic-gradient(${ring} ${p}%, ${track} 0)"><span class="fill" style="background:${fillCss(s)};--hub:${onCab?'var(--drawer)':'var(--panel)'}"></span></span>`;
 }
 function label(s){ return [s.material, s.color].filter(Boolean).join(' ') || s.name || 'Rolle'; }
@@ -1025,7 +1032,13 @@ $('#tabs').addEventListener('click', e => {
 // --- Printorix-Menü (Backup, Import, Abmelden)
 const menuOpen = o => { $('#menuPop').hidden = !o; $('#menuBtn').setAttribute('aria-expanded', o); };
 $('#menuBtn').addEventListener('click', e => { e.stopPropagation(); menuOpen($('#menuPop').hidden); });
-$('#menuPop').addEventListener('click', e => { if (e.target.closest('button')) menuOpen(false); });
+$('#menuPop').addEventListener('click', e => { if (e.target.closest('button') && !e.target.closest('#themeBtn')) menuOpen(false); });
+// Dunkelmodus ein/aus (wird pro Gerät gespeichert)
+const isDark = () => { const t = document.documentElement.getAttribute('data-theme'); return t ? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; };
+function syncTheme(){ $('#themeBtn').setAttribute('aria-checked', isDark()); const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', isDark()?'#0F1722':'#FFFFFF'); }
+$('#themeBtn').addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); try{ localStorage.setItem('fl-theme', t); }catch(_){} syncTheme(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', syncTheme);
+syncTheme();
 document.addEventListener('click', e => { if (!e.target.closest('#menu')) menuOpen(false); });
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') menuOpen(false);
