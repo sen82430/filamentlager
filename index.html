@@ -99,6 +99,7 @@ h1 small{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--mute
 .panel .lh .nm{white-space:normal;min-width:0;flex:1 1 auto}
 .panel .lh>span:last-child{margin-left:auto}
 .printer .slots,.panel .spools{min-width:0}
+.slot.drop-slot{border-color:var(--accent);border-style:solid;box-shadow:0 0 0 2px var(--accent) inset}
 .icon-btn:disabled{opacity:.2;cursor:default;background:transparent}
 .icon-btn:hover{opacity:1;background:rgba(127,127,127,.18)}
 .icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
@@ -433,15 +434,44 @@ function drawer(l){
     ${z.length?`<div class="zub">${z.map(zubHtml).join('')}</div>`:''}
     ${!items.length?'<div class="empty">leer – Rolle hierher ziehen</div>':''}</div>`;
 }
+function slotLayout(l){
+  const items = fil(inLoc(l.id)); const n = Math.max(+l.slots||0, items.length); const cells = Array(n).fill(null); const rest = [];
+  items.forEach(s => { const k = (+s.slot||0) - 1; if (k>=0 && k<n && !cells[k]) cells[k] = s; else rest.push(s); });
+  rest.forEach(s => { const k = cells.indexOf(null); if (k>=0) cells[k] = s; else cells.push(s); });
+  return cells;
+}
 function printer(l){
   const items = fil(inLoc(l.id));
   let body;
-  if (l.slots) {
-    const n = Math.max(l.slots, items.length); const cells=[];
-    for (let i=0;i<n;i++){ const s=items[i]; cells.push(s?`<div class="slot filled">${spoolBtn(s,false)}</div>`:`<div class="slot"><span class="no">Slot ${i+1}</span></div>`); }
-    body = `<div class="slots">${cells.join('')}</div>`;
+  if (+l.slots) {
+    body = `<div class="slots">${slotLayout(l).map((s,i)=>`<div class="slot${s?' filled':''}" data-slot="${i+1}" data-sloc="${l.id}">${s?spoolBtn(s,false):`<span class="no">Slot ${i+1}</span>`}</div>`).join('')}</div>`;
   } else body = items.length ? `<div class="spools">${items.map(s=>spoolBtn(s,false)).join('')}</div>` : '<div class="empty">leer</div>';
   return `<div class="panel printer loc" data-loc="${l.id}">${head(l,inLoc(l.id))}${body}</div>`;
+}
+const slotted = id => { const p = state.printers.find(x=>x.id===id); return p && +p.slots ? p : null; };
+// Rolle in einen Slot setzen; belegter Slot wird getauscht, alle anderen behalten ihren Platz
+function setSlot(spoolId, locId, slotNo){
+  const p = slotted(locId); const s = state.spools.get(spoolId); if (!p || !s) return;
+  const cells = slotLayout(p); const from = s.loc===locId ? cells.findIndex(x=>x && x.id===s.id) : -1;
+  if (from>=0) cells[from] = null;
+  const k = slotNo-1; while (cells.length <= k) cells.push(null);
+  const occ = cells[k]; cells[k] = {...s, loc:locId};
+  if (occ){ const tgt = from>=0 ? from : cells.indexOf(null); if (tgt>=0) cells[tgt] = occ; else cells.push(occ); }
+  cells.forEach((c,i) => { if (!c) return; const cur = state.spools.get(c.id); if (cur.loc!==locId || +cur.slot!==i+1) put({...cur, loc:locId, slot:i+1}); });
+}
+// Reihenfolge in Orten ohne feste Slots
+function movePos(spoolId, dir){
+  const s = state.spools.get(spoolId); if (!s) return;
+  const list = inLoc(s.loc).filter(x=>(x.kind==='zubehoer')===(s.kind==='zubehoer'));
+  const i = list.findIndex(x=>x.id===s.id), j = i+dir; if (i<0 || j<0 || j>=list.length) return;
+  [list[i],list[j]] = [list[j],list[i]];
+  list.forEach((x,n) => { if ((x.pos??0)!==n*10) put({...x, pos:n*10}); });
+}
+function insertBefore(spoolId, targetId){
+  const s = state.spools.get(spoolId), t = state.spools.get(targetId); if (!s || !t || s.id===t.id) return;
+  const list = inLoc(t.loc).filter(x=>x.id!==s.id); const k = list.findIndex(x=>x.id===t.id);
+  list.splice(k, 0, {...s, loc:t.loc, slot:0});
+  list.forEach((x,n) => { const cur = state.spools.get(x.id); if (cur.loc!==t.loc || (cur.pos??0)!==n*10) put({...cur, loc:t.loc, slot:0, pos:n*10}); });
 }
 function simplePanel(l, extra=''){
   const items = fil(inLoc(l.id));
@@ -588,6 +618,8 @@ function openSheet(s){
       <div class="palette" id="pal">${COLORS.map(([n,h])=>`<button type="button" data-c="${esc(n)}" data-h="${h}" title="${esc(n)}" aria-label="${esc(n)}" aria-pressed="${editing.color===n}" style="background:${h==='rainbow'?fillCss({hex:'rainbow'}):h}"></button>`).join('')}<input type="color" id="fHex" value="${/^#/.test(editing.hex)?editing.hex:'#888888'}" title="Eigene Farbe" aria-label="Eigene Farbe"></div>
       <div class="two"><div class="field"><label for="fLoc">Ort</label><select id="fLoc">${locOpts}</select></div>
         <div class="field"><label for="fFull">Rollengrösse (g)</label><input id="fFull" type="number" min="100" step="50" value="${editing.full||1000}"></div></div>
+      <div class="field" id="fSlotWrap" hidden><label for="fSlot">Slot im Gerät</label><select id="fSlot"></select></div>
+      ${!isNew ? `<div class="field" id="fPosWrap" hidden><span class="lbl">Reihenfolge</span><div class="quick"><button type="button" class="btn sm" id="posL">◀ Nach vorne</button><button type="button" class="btn sm" id="posR">Nach hinten ▶</button><span class="note" id="posInfo" style="align-self:center"></span></div></div>`:''}
       <div class="field"><label for="fNote">Notiz</label><textarea id="fNote" placeholder="z. B. getrocknet am …, Druckprofil">${esc(editing.note||'')}</textarea></div>
       <datalist id="dlMat">${MATS.map(m=>`<option value="${m}">`).join('')}</datalist>
       <datalist id="dlBrand">${BRANDS.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
@@ -608,6 +640,18 @@ function openSheet(s){
     editing.material = $('#fMat').value.trim(); editing.brand=$('#fBrand').value.trim(); editing.finish=$('#fFin').value.trim();
     const c = $('#fCol').value.trim(); if (c!==editing.color){ editing.color=c; const h=hexOf(c); if(h) editing.hex=h; }
     editing.note = $('#fNote').value; editing.loc = $('#fLoc').value;
+    const sp = slotted(editing.loc), orig = state.spools.get(editing.id);
+    $('#fSlotWrap').hidden = !sp;
+    if (sp){
+      const cells = slotLayout(sp); const mine = orig && orig.loc===sp.id ? cells.findIndex(x=>x && x.id===editing.id)+1 : 0;
+      const want = $('#fSlot').dataset.loc===sp.id ? +$('#fSlot').value : mine;
+      $('#fSlot').innerHTML = (mine?'':'<option value="0">nächster freier Slot</option>') + cells.map((c,i)=>`<option value="${i+1}"${want===i+1?' selected':''}>Slot ${i+1}${c && c.id!==editing.id ? ' – '+esc(label(c))+' (wird getauscht)' : c ? ' – aktuell' : ' – frei'}</option>`).join('');
+      $('#fSlot').dataset.loc = sp.id;
+    }
+    if ($('#fPosWrap')){
+      const same = orig && orig.loc===editing.loc && !sp; $('#fPosWrap').hidden = !same;
+      if (same){ const list = fil(inLoc(orig.loc)); const i = list.findIndex(x=>x.id===orig.id); $('#posInfo').textContent = `Position ${i+1} von ${list.length}`; $('#posL').disabled = i<=0; $('#posR').disabled = i>=list.length-1; }
+    }
     $('#fWr').max = editing.full; $('#fWr').value = editing.weight;
     $('#bigDisc').innerHTML = `<span class="weight-big">${discHtml(editing,false)}</span>`;
     sh.querySelectorAll('#pal button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.c===editing.color));
@@ -621,7 +665,8 @@ function openSheet(s){
     if (b.dataset.q){ editing.quality=b.dataset.q; sh.querySelectorAll('#fQual button').forEach(x=>x.setAttribute('aria-pressed',x===b)); }
     if (b.dataset.c){ $('#fCol').value=b.dataset.c; editing.color=b.dataset.c; editing.hex=b.dataset.h; sync(); }
     if (b.id==='cancel') close();
-    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now()}; put(c); toast('Dupliziert'); close(); }
+    if (b.id==='posL' || b.id==='posR'){ movePos(editing.id, b.id==='posL'?-1:1); editing.pos = state.spools.get(editing.id).pos; sync(); }
+    if (b.id==='dup'){ sync(); const c={...editing,id:newId('f'),pos:Date.now(),slot:0}; put(c); toast('Dupliziert'); close(); }
     if (b.id==='used'){ const s=state.spools.get(editing.id); putOrder({id:newId('r'),name:label(s)+(s.finish?' '+s.finish:''),material:s.material,color:s.color,hex:s.hex,brand:s.brand,finish:s.finish,qty:1,created:Date.now()}); del(s.id); toast('Rolle entfernt und auf «Zu bestellen» gesetzt'); close(); }
     if (b.id==='delBtn'){ $('#confirmHost').innerHTML = `<div class="confirm">Wirklich löschen? <button type="button" class="btn sm danger" id="yesDel">Ja, löschen</button><button type="button" class="btn sm" id="noDel">Nein</button></div>`; }
     if (b.id==='yesDel'){ del(editing.id); toast('Gelöscht'); close(); }
@@ -631,7 +676,11 @@ function openSheet(s){
     e.preventDefault();
     if (isZ){ editing.name=$('#fName').value.trim(); editing.qty=$('#fQty').value.trim(); editing.loc=$('#fLoc').value; if(!editing.name) return; }
     else { sync(); editing.name = [editing.material,editing.color,editing.finish,editing.brand].filter(Boolean).join(' ').toUpperCase(); editing.quality = editing.quality||'gut'; }
-    put(editing); toast(isNew?'Hinzugefügt':'Gespeichert'); close();
+    const sp = !isZ && slotted(editing.loc); const slotNo = sp ? +$('#fSlot').value : 0; const orig = state.spools.get(editing.id);
+    if (orig && orig.loc!==editing.loc) editing.slot = 0;
+    if (sp && slotNo){ put({...editing, slot: orig && orig.loc===editing.loc ? orig.slot||0 : 0}); setSlot(editing.id, editing.loc, slotNo); }
+    else put(editing);
+    toast(isNew?'Hinzugefügt':'Gespeichert'); close();
   });
   $('#scrim').addEventListener('click', e => { if (e.target.id==='scrim') close(); });
   if (!matchMedia('(max-width:760px)').matches) (isZ ? $('#fName') : $('#fW')).focus();
@@ -768,9 +817,16 @@ $('#importFile').addEventListener('change', async e => {
 // Drag & Drop (Desktop) – mobil über «Ort» im Editor
 let dragId = null;
 document.addEventListener('dragstart', e => { const b=e.target.closest('[data-id]'); if(!b) return; dragId=b.dataset.id; b.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',dragId);}catch(_){} });
-document.addEventListener('dragend', () => { dragId=null; document.querySelectorAll('.drop-on,.dragging').forEach(x=>x.classList.remove('drop-on','dragging')); });
-document.addEventListener('dragover', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); document.querySelectorAll('.drop-on').forEach(x=>x!==l&&x.classList.remove('drop-on')); l.classList.add('drop-on'); });
-document.addEventListener('drop', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); const s=state.spools.get(dragId); if(s && s.loc!==l.dataset.loc){ put({...s,loc:l.dataset.loc,pos:Date.now()}); toast(`→ ${locName(l.dataset.loc)}`); } });
+document.addEventListener('dragend', () => { dragId=null; document.querySelectorAll('.drop-on,.dragging,.drop-slot').forEach(x=>x.classList.remove('drop-on','dragging','drop-slot')); });
+document.addEventListener('dragover', e => { const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); document.querySelectorAll('.drop-slot').forEach(x=>x.classList.remove('drop-slot')); e.target.closest('[data-slot]')?.classList.add('drop-slot'); document.querySelectorAll('.drop-on').forEach(x=>x!==l&&x.classList.remove('drop-on')); l.classList.add('drop-on'); });
+document.addEventListener('drop', e => {
+  const l=e.target.closest('.loc'); if(!l||!dragId) return; e.preventDefault(); const s=state.spools.get(dragId); if(!s) return;
+  const sl=e.target.closest('[data-slot]');
+  if (sl && s.kind!=='zubehoer'){ const p=slotted(sl.dataset.sloc); if(p){ setSlot(s.id, p.id, +sl.dataset.slot); toast(`→ ${locName(p.id)} · Slot ${sl.dataset.slot}`); return; } }
+  const t=e.target.closest('[data-id]');
+  if (t && t.dataset.id!==s.id && !slotted(l.dataset.loc)){ insertBefore(s.id, t.dataset.id); if (s.loc!==l.dataset.loc) toast(`→ ${locName(l.dataset.loc)}`); return; }
+  if (s.loc!==l.dataset.loc){ const p=slotted(l.dataset.loc); if (p){ const free=slotLayout(p).indexOf(null); setSlot(s.id, p.id, free>=0?free+1:slotLayout(p).length+1); } else put({...s,loc:l.dataset.loc,slot:0,pos:Date.now()}); toast(`→ ${locName(l.dataset.loc)}`); }
+});
 
 let tt; function toast(m){ $('#toastHost').innerHTML=`<div class="toast" role="status">${esc(m)}</div>`; clearTimeout(tt); tt=setTimeout(()=>$('#toastHost').innerHTML='',2200); }
 
